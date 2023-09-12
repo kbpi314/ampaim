@@ -1,0 +1,336 @@
+###########
+# AMP AIM #
+###########
+
+
+###
+# Q2 running
+###
+
+
+
+set -e
+set -o pipefail
+
+PYTHONPATH=/hpc/packages/minerva-centos7/anaconda3/2020.8/pkgs;
+export LC_ALL=en_US.UTF-8;
+ml anaconda3;
+source activate qiime2-2020.8.0;
+
+###
+# Adam MMEDs path
+###
+
+# newer run with all samples incl EISER
+/sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_Cross_Disease_Pilot_0
+
+
+###
+# Sample Breakdown
+###
+
+-per 'Project'
+194 eiser
+106 microteach
+36 TWIN_PSA
+11 glass_control
+10 duplicate_control
+4 neg_control
+
+336 pts, 25 controls
+
+-per 'Diagnosis'
+194 eiser # presumably correspond 1:1 with eiser
+50 RA # 6 of these are controls!!
+36 psa # presumably correspond 1:1 with TWIN_PSA 
+29 pso 
+14 unaffected
+11 healthy # 5 of these are also controls!! leaving 6 to do the rest of the pairwise
+5 ss 
+4 cd 
+4 sle 
+
+
+
+###
+# inputs
+###
+
+# original job file with all samples
+jobfile_0.lsf 
+
+# job file with ?contam filtering
+jobfile_1.lsf
+
+Everything has contaminants except the two tables that specifically say “contams_removed”, which are an ASV table and a genus level table. There’s also a “taxa_removed” file, which just lists the contams that were filtered out
+
+# new jobfiles
+/sc/arion/projects/clemej05a/kevin/ampaim/jobs/jobfile_kb0_fix66.lsf  
+/sc/arion/projects/clemej05a/kevin/ampaim/jobs/jobfile_kb0_noctrl.lsf 
+
+
+# for both fix66 and noctrl (fix66 has controls)
+# cp jobfile to jobfile_kb0.lsf
+# cp qiime_mapping_file_noctrl.tsv to /sc/arion/projects/clemej05a/kevin/ampaim/inputs/
+# the mapping file for fix66 was copied to noctrl to not change the lsf script because of all the declarations of $RUN_Qiime2_KB
+
+
+###
+# LEfSe
+###
+
+# Filter tables into subtables for LEfSe pairwise comparisons. All columns would be in the 'Project' column of metadata.
+
+# original metadata file for filtering
+/sc/arion/projects/clemej05a/kevin/ampaim/inputs/qiime_mapping_file_noctrl.tsv
+
+# qza at L6
+/sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_Cross_Disease_Pilot_0/Qiime2_0/taxa_collapsed_table_L6.qza   
+
+# filter into smaller subsets based on comparison of interest
+# ### example: filter to skin
+qiime feature-table filter-samples \
+--i-table feature-table.qza \
+--m-metadata-file sample-metadata.tsv \
+--p-where '[body-site] IN ("left palm", "right palm")' \
+--o-filtered-table filtered-table.qza
+
+
+# Per ADAM's runs: 
+# LEfSe_0 is RAvUAH, 1 is AvUAH, 2 is PSvUAH
+
+# (1) aggregate healthy vs affected
+# mapping file, class is column Diagnosis, no subclass
+/sc/arion/projects/clemej05a/kevin/ampaim/inputs/qiime_mapping_file_noctrl_AvUAH.tsv
+
+# done at login node bc fast hopefully
+qiime feature-table filter-samples \
+--i-table /sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_Cross_Disease_Pilot_0/Qiime2_0/taxa_collapsed_table_L6.qza    \
+--m-metadata-file /sc/arion/projects/clemej05a/kevin/ampaim/inputs/qiime_mapping_file_noctrl_AvUAH.tsv \
+--p-where '[Diagnosis] IN ("affected", "healthy")' \
+--o-filtered-table /sc/arion/projects/clemej05a/kevin/ampaim/inputs/L6_AvUAH.qza
+
+
+# (2) RA vs unaffected and healthy
+# mapping file
+/sc/arion/projects/clemej05a/kevin/ampaim/inputs/qiime_mapping_file_noctrl_RAvUAH.tsv
+
+# done at login node bc fast hopefully
+qiime feature-table filter-samples \
+--i-table /sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_Cross_Disease_Pilot_0/Qiime2_0/taxa_collapsed_table_L6.qza    \
+--m-metadata-file /sc/arion/projects/clemej05a/kevin/ampaim/inputs/qiime_mapping_file_noctrl_RAvUAH.tsv \
+--p-where '[Diagnosis] IN ("RA", "healthy")' \
+--o-filtered-table /sc/arion/projects/clemej05a/kevin/ampaim/inputs/L6_RAvUAH.qza
+
+
+# (3) PS vs unaffected and healthy
+# mapping file
+/sc/arion/projects/clemej05a/kevin/ampaim/inputs/qiime_mapping_file_noctrl_PSvUAH.tsv
+
+# done at login node bc fast hopefully
+qiime feature-table filter-samples \
+--i-table /sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_Cross_Disease_Pilot_0/Qiime2_0/taxa_collapsed_table_L6.qza    \
+--m-metadata-file /sc/arion/projects/clemej05a/kevin/ampaim/inputs/qiime_mapping_file_noctrl_PSvUAH.tsv \
+--p-where '[Diagnosis] IN ("RA", "healthy")' \
+--o-filtered-table /sc/arion/projects/clemej05a/kevin/ampaim/inputs/L6_PSvUAH.qza
+
+
+
+###
+# LEfSe plot tweaking
+###
+
+# Ran by ADAM
+/sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_Cross_Disease_Pilot_0/Lefse_0
+
+# left-space, right-space, width
+# keep subclades and max_feature_len the same per og job file
+# same import qiime modules per above except with source activate lefse
+
+PYTHONPATH=/hpc/packages/minerva-centos7/anaconda3/2020.8/pkgs;
+export LC_ALL=en_US.UTF-8;
+ml anaconda3;
+source activate /sc/arion/projects/MMEDS/.modules/lefse
+
+lefse_plot_res.py $/sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_Cross_Disease_Pilot_0/Lefse_0/lefse_results.res /sc/arion/projects/clemej05a/kevin/ampaim/graphs/results_plot_RAvUAH.png --format png --max_feature_len 160 --subclades -1 --dpi 200 --left_space 0.2 --right_space 0.1 --width 12;
+
+# the above are defaults, width 7->15, max_feature_len 60->160, dpi 72->200
+# do the same for lefse_1 (affected vs UAH) and lefse_2 (PS vs UAH)
+
+lefse_plot_res.py /sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_Cross_Disease_Pilot_0/Lefse_1/lefse_results.res /sc/arion/projects/clemej05a/kevin/ampaim/graphs/results_plot_AvUAH.png --format png --max_feature_len 160 --subclades -1 --dpi 200 --left_space 0.2 --right_space 0.1 --width 12;
+
+lefse_plot_res.py /sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_Cross_Disease_Pilot_0/Lefse_1/lefse_results.res /sc/arion/projects/clemej05a/kevin/ampaim/graphs/results_plot_PSvUAH.png --format png --max_feature_len 160 --subclades -1 --dpi 200 --left_space 0.2 --right_space 0.1 --width 12;
+
+
+###
+# CUTIE: jobs00-05
+###
+
+# 00, 01 for aggregate
+# 02, 03 for RA
+# 04, 05 for PSA/PSO===PS
+
+mkdir /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs00/
+echo 'python /hpc/users/buk02/Repositories/CUTIE/scripts/calculate_cutie.py -i /sc/arion/projects/clemej05a/kevin/ampaim/jobs/ra_forward_config.ini' > /sc/arion/projects/clemej05a/kevin/ampaim/jobs/cutie_ra_forward.txt
+
+python /hpc/users/buk02/Repositories/labtools/scripts/generate_lsf_chimera.py -c /sc/arion/projects/clemej05a/kevin/ampaim/jobs/cutie_ra_forward.txt -o /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs00/ -N cutie_ra_forward -n 2 -w 2:00 -s True
+
+
+###
+# jobs01
+###
+
+PiCRUSt2 from Adam
+EC, KO, pathway are 3 different pathway classifications (e.g. Kegg Ortholog), Adam rec'd using the 3rd folder with the unstratified (what does that mean?)
+
+###
+# jobs02
+###
+
+metadata taxa correlations only in RA ptx
+GLMs to come?
+
+mkdir /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs02/
+echo 'python /hpc/users/buk02/Repositories/CUTIE/scripts/calculate_cutie.py -i /sc/arion/projects/clemej05a/kevin/ampaim/jobs/cutie_ra_forward_otumeta.ini' > /sc/arion/projects/clemej05a/kevin/ampaim/jobs/cutie_ra_forward_otumeta.txt
+
+python /hpc/users/buk02/Repositories/labtools/scripts/generate_lsf_chimera.py -c /sc/arion/projects/clemej05a/kevin/ampaim/jobs/cutie_ra_forward_otumeta.txt -o /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs02/ -N cutie_ra_forward_otumeta -n 2 -w 1:00 -s True
+
+
+###
+# jobs03
+###
+
+# reverse of RA in job02
+
+mkdir /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs03/
+echo 'python /hpc/users/buk02/Repositories/CUTIE/scripts/calculate_cutie.py -i /sc/arion/projects/clemej05a/kevin/ampaim/jobs/cutie_ra_reverse_otumeta.ini' > /sc/arion/projects/clemej05a/kevin/ampaim/jobs/cutie_ra_reverse_otumeta.txt
+
+python /hpc/users/buk02/Repositories/labtools/scripts/generate_lsf_chimera.py -c /sc/arion/projects/clemej05a/kevin/ampaim/jobs/cutie_ra_reverse_otumeta.txt -o /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs03/ -N cutie_ra_reverse_otumeta -n 2 -w 2:00 -s True
+
+
+
+###
+# jobs04, 05
+###
+# healthy forward and reverse
+
+mkdir /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs04/
+echo 'python /hpc/users/buk02/Repositories/CUTIE/scripts/calculate_cutie.py -i /sc/arion/projects/clemej05a/kevin/ampaim/jobs/cutie_healthy_forward_otumeta.ini' > /sc/arion/projects/clemej05a/kevin/ampaim/jobs/cutie_healthy_forward_otumeta.txt
+
+python /hpc/users/buk02/Repositories/labtools/scripts/generate_lsf_chimera.py -c /sc/arion/projects/clemej05a/kevin/ampaim/jobs/cutie_healthy_forward_otumeta.txt -o /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs04/ -N cutie_healthy_forward_otumeta -n 2 -w 2:00 -s True
+
+
+
+mkdir /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs05/
+echo 'python /hpc/users/buk02/Repositories/CUTIE/scripts/calculate_cutie.py -i /sc/arion/projects/clemej05a/kevin/ampaim/jobs/cutie_healthy_reverse_otumeta.ini' > /sc/arion/projects/clemej05a/kevin/ampaim/jobs/cutie_healthy_reverse_otumeta.txt
+
+python /hpc/users/buk02/Repositories/labtools/scripts/generate_lsf_chimera.py -c /sc/arion/projects/clemej05a/kevin/ampaim/jobs/cutie_healthy_reverse_otumeta.txt -o /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs05/ -N cutie_healthy_reverse_otumeta -n 2 -w 2:00 -s True
+
+
+###
+# jobs06, 07
+###
+
+# for and rev for pso psa
+
+
+
+mkdir /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs06/
+echo 'python /hpc/users/buk02/Repositories/CUTIE/scripts/calculate_cutie.py -i /sc/arion/projects/clemej05a/kevin/ampaim/jobs/cutie_ps_forward_otumeta.ini' > /sc/arion/projects/clemej05a/kevin/ampaim/jobs/cutie_ps_forward_otumeta.txt
+
+python /hpc/users/buk02/Repositories/labtools/scripts/generate_lsf_chimera.py -c /sc/arion/projects/clemej05a/kevin/ampaim/jobs/cutie_ps_forward_otumeta.txt -o /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs06/ -N cutie_ps_forward_otumeta -n 2 -w 2:00 -s True
+
+
+
+mkdir /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs07/
+echo 'python /hpc/users/buk02/Repositories/CUTIE/scripts/calculate_cutie.py -i /sc/arion/projects/clemej05a/kevin/ampaim/jobs/cutie_ps_reverse_otumeta.ini' > /sc/arion/projects/clemej05a/kevin/ampaim/jobs/cutie_ps_reverse_otumeta.txt
+
+python /hpc/users/buk02/Repositories/labtools/scripts/generate_lsf_chimera.py -c /sc/arion/projects/clemej05a/kevin/ampaim/jobs/cutie_ps_reverse_otumeta.txt -o /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs07/ -N cutie_ps_reverse_otumeta -n 2 -w 2:00 -s True
+
+
+
+
+###
+# jobs08 test meta ra for weird lack of TN plots
+###
+
+mkdir /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs08/
+echo 'python /hpc/users/buk02/Repositories/CUTIE/scripts/calculate_cutie.py -i /sc/arion/projects/clemej05a/kevin/ampaim/jobs/test_ra_reverse_otumeta.ini' > /sc/arion/projects/clemej05a/kevin/ampaim/jobs/test_ra_reverse_otumeta.txt
+
+python /hpc/users/buk02/Repositories/labtools/scripts/generate_lsf_chimera.py -c /sc/arion/projects/clemej05a/kevin/ampaim/jobs/test_ra_reverse_otumeta.txt -o /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs08/ -N test_ra_reverse_otumeta -n 1 -w 1:00 -s True
+
+
+
+
+
+
+###
+# jobs09 RA metadata w/ fxn corr
+###
+
+mkdir /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs09/
+echo 'python /hpc/users/buk02/Repositories/CUTIE/scripts/calculate_cutie.py -i /sc/arion/projects/clemej05a/kevin/ampaim/jobs/cutie_ra_forward_pathwaymeta.ini' > /sc/arion/projects/clemej05a/kevin/ampaim/jobs/cutie_ra_forward_pathwaymeta.txt
+
+python /hpc/users/buk02/Repositories/labtools/scripts/generate_lsf_chimera.py -c /sc/arion/projects/clemej05a/kevin/ampaim/jobs/cutie_ra_forward_pathwaymeta.txt -o /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs09/ -N cutie_ra_forward_pathwaymeta -n 2 -w 1:00 -s True
+
+
+
+###
+# jobs10 RA  OTU w/ fxn corr
+###
+
+mkdir /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs10/
+echo 'python /hpc/users/buk02/Repositories/CUTIE/scripts/calculate_cutie.py -i /sc/arion/projects/clemej05a/kevin/ampaim/jobs/cutie_ra_forward_pathwayotu.ini' > /sc/arion/projects/clemej05a/kevin/ampaim/jobs/cutie_ra_forward_pathwayotu.txt
+
+python /hpc/users/buk02/Repositories/labtools/scripts/generate_lsf_chimera.py -c /sc/arion/projects/clemej05a/kevin/ampaim/jobs/cutie_ra_forward_pathwayotu.txt -o /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs10/ -N cutie_ra_forward_pathwayotu -n 2 -w 1:00 -s True
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/sc/arion/projects/clemej05a/kevin/ampaim/jobs/ra_forward_config.ini 
+
+[input]
+samp_var1_fp: /sc/arion/projects/clemej05a/kevin/ampaim/inputs/df_otu_ra.tsv
+delimiter1: \t
+samp_var2_fp: /sc/arion/projects/clemej05a/kevin/ampaim/inputs/df_otu_ra.tsv
+delimiter2: \t
+f1type: tidy
+f2type: tidy
+skip1: 0
+skip2: 0
+startcol1: -1
+endcol1: -1
+startcol2: -1
+endcol2: -1
+paired: True
+overwrite: True
+
+[output]
+working_dir: /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs00/
+overwrite: True
+
+[stats]
+param: p
+statistic: spearman
+resample_k: 1
+alpha: 0.05
+mc: nomc
+fold: False
+fold_value: 1
+corr_compare: False
+
+[graph]
+graph_bound: 100
+fix_axis: False
