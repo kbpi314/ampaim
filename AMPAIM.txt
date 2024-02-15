@@ -7,48 +7,69 @@
 # Q2 running
 ###
 
-
-
-set -e
-set -o pipefail
-
 PYTHONPATH=/hpc/packages/minerva-centos7/anaconda3/2020.8/pkgs;
 export LC_ALL=en_US.UTF-8;
 ml anaconda3;
 source activate qiime2-2020.8.0;
 
+
+# twins shotgun data
+/sc/arion/projects/clemej05a/PsA_IL17/inputs/Metagenomes/combined
+
+
+
 ###
 # Adam MMEDs path
 ###
 
-# newer run with all samples incl EISER
+# original run
+/sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_AMP_AIM_MSQ_138_0
+
+# next run with all samples incl EISER
 /sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_Cross_Disease_Pilot_0
 
+# newer run TBD
+
+
 
 ###
-# Sample Breakdown
+# File Structure
 ###
 
--per 'Project'
-194 eiser
-106 microteach
-36 TWIN_PSA
-11 glass_control
-10 duplicate_control
-4 neg_control
+inputs/
+	Qiime2_0_KB_noctrl_noeiser 		# everything but blank/glass controls and eiser
+	Qiime2_2_KB						# everything, but no control no eiser and no healthy 
+	Qiime2_1_KB						# psa of eiser and nyu
+	Qiime2_nyu         			    # psa, pso, ra no healthy
+	Qiime2_psara 					# psa and ra no healthy
+	
+	Qiime2_2a_KB					# DMM on everything incl healthy but no control no eiser
+	Qiime2_2b_KB					# DMM on everything w/o healthy, no control no eiser
+	Qiime2_nyu_dmm
+	Qiime2_psara_dmm
+	Qiime2_0_MSQ141					# MSQ 141 with all samples
 
-336 pts, 25 controls
+/sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_Full_AMP_AIM_MSQ_141_0/Qiime2_0
 
--per 'Diagnosis'
-194 eiser # presumably correspond 1:1 with eiser
-50 RA # 6 of these are controls!!
-36 psa # presumably correspond 1:1 with TWIN_PSA 
-29 pso 
-14 unaffected
-11 healthy # 5 of these are also controls!! leaving 6 to do the rest of the pairwise
-5 ss 
-4 cd 
-4 sle 
+outputs/
+	visualizations_dir_L3 			# various DMM
+	jobs00 							# CUTIE			
+	jobs01
+	jobs02							# LEfSe for PsAvH
+	jobs03							# LEfSe for PsOvH
+	jobs04							# LEfSe results for UpSetR
+	jobs05							# MSQ141 run
+	jobs06							# merge, upsetr examples
+	jobs07							# AB MSQ135 - MSQ141 help
+	jobs08							# batch correction
+
+graphs/
+# LEfSe_0 is RAvUAH, 1 is AvUAH, 2 is PSvUAH
+# LEfSe_3/4/5 is AvH, RAvH, and PSvH
+# LEfSe 6/7/8/9/10 for SSvH, SLEvH, CDvH, SSSLEvH, RAPsAvH
+
+LEfSe_11 for PSAvH
+LEfSe_12 for PSOvH
 
 
 
@@ -59,20 +80,109 @@ source activate qiime2-2020.8.0;
 # original job file with all samples
 jobfile_0.lsf 
 
-# job file with ?contam filtering
+# with no control
+jobfile_kb0_noctrl.lsf
+
+# jobfile with no eiser samples
 jobfile_1.lsf
 
-Everything has contaminants except the two tables that specifically say “contams_removed”, which are an ASV table and a genus level table. There’s also a “taxa_removed” file, which just lists the contams that were filtered out
+# jobfile with no healthy, for DMM purposes
+jobfile_2.lsf
+
+# jobfile with nyu only, no healthy, no ctrl for DMM 
+nyu.lsf
+
+
+# Everything has contaminants except the two tables that specifically say “contams_removed”, which are an ASV table and a genus level table. There’s also a “taxa_removed” file, which just lists the contams that were filtered out
 
 # new jobfiles
 /sc/arion/projects/clemej05a/kevin/ampaim/jobs/jobfile_kb0_fix66.lsf  
 /sc/arion/projects/clemej05a/kevin/ampaim/jobs/jobfile_kb0_noctrl.lsf 
 
-
 # for both fix66 and noctrl (fix66 has controls)
 # cp jobfile to jobfile_kb0.lsf
 # cp qiime_mapping_file_noctrl.tsv to /sc/arion/projects/clemej05a/kevin/ampaim/inputs/
 # the mapping file for fix66 was copied to noctrl to not change the lsf script because of all the declarations of $RUN_Qiime2_KB
+
+
+# convert PCOA to tsv
+qiime tools export \
+--input-path /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Qiime2_psara_dmm/core_metrics_results/weighted_unifrac_pcoa_results.qza \
+--output-path /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Qiime2_psara_dmm/core_metrics_results/
+
+
+###
+# LEfSe filter
+
+PsA PsO
+
+qiime feature-table filter-samples \
+--i-table /sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_Cross_Disease_Pilot_0/Qiime2_0/taxa_collapsed_table_L6.qza    \
+--m-metadata-file /sc/arion/projects/clemej05a/kevin/ampaim/inputs/qiime_mapping_file_psahealthy.tsv \
+--p-where '[Diagnosis] IN ("psa", "healthy")' \
+--o-filtered-table /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs02/L6_PsAvH.qza
+
+qiime feature-table filter-samples \
+--i-table /sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_Cross_Disease_Pilot_0/Qiime2_0/taxa_collapsed_table_L6.qza    \
+--m-metadata-file /sc/arion/projects/clemej05a/kevin/ampaim/inputs/qiime_mapping_file_psohealthy.tsv \
+--p-where '[Diagnosis] IN ("pso", "healthy")' \
+--o-filtered-table /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs03/L6_PsOvH.qza
+
+
+
+###
+# Testing for batch effects
+###
+
+# try merging $RUN_Qiime2/rep_seqs_table.qz from both runs
+# combine otu table qza  
+# combine mapping files
+# add column for batch 
+# create distance matrix
+# do beta group sig and emperor viz
+
+
+# convert otu qza feature table to biom
+# convert biom to tsv
+
+# apply batch correction with qiime mapping file
+/sc/arion/projects/MMEDS/batch_correction/batch_correction_runner.py
+
+# convert tsv to biom
+# convert biom to qza frequency feature table
+# rerun new batch_beta.lsf 
+
+
+
+
+###
+# Manual Beta Div significance
+###
+
+
+# L6 clusters for DMM with and without healthy
+
+qiime diversity beta-group-significance --i-distance-matrix /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Qiime2_2a_KB/core_metrics_results/unweighted_unifrac_distance_matrix.qza --m-metadata-file /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Qiime2_2a_KB/qiime_mapping_file_dmm_L6.tsv --m-metadata-column dmm.grp --o-visualization /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Qiime2_2a_KB/unweighted_dmm_significance.qzv --p-pairwise
+
+
+qiime diversity beta-group-significance --i-distance-matrix /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Qiime2_2b_KB/core_metrics_results/unweighted_unifrac_distance_matrix.qza --m-metadata-file /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Qiime2_2b_KB/qiime_mapping_file_dmm_nohealthy_L6.tsv --m-metadata-column dmm.grp --o-visualization /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Qiime2_2b_KB/unweighted_dmm_significance.qzv --p-pairwise
+
+
+qiime diversity beta-group-significance --i-distance-matrix /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Qiime2_nyu_dmm/core_metrics_results/unweighted_unifrac_distance_matrix.qza --m-metadata-file /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Qiime2_nyu_dmm/qiime_mapping_file_nyu_dmm.tsv --m-metadata-column dmm.grp --o-visualization /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Qiime2_nyu_dmm/unweighted_dmm_significance.qzv --p-pairwise
+
+
+# export distance matrix for glass controls
+
+qiime tools export \
+--input-path /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Qiime2_0_KB_fix66/core_metrics_results/unweighted_unifrac_distance_matrix.qza \
+--output-path /sc/arion/projects/clemej05a/kevin/twinsra/inputs/Qiime2_0_KB_fix66/core_metrics_results/unweighted_unifrac_distance_matrix.tsv \
+--output-format .tsv
+
+qiime tools export \
+--input-path /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Qiime2_0_KB_fix66/core_metrics_results/unweighted_unifrac_distance_matrix.qza \
+--output-path /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Qiime2_0_KB_fix66/core_metrics_results/
+
+
 
 
 ###
@@ -87,52 +197,31 @@ Everything has contaminants except the two tables that specifically say “conta
 # qza at L6
 /sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_Cross_Disease_Pilot_0/Qiime2_0/taxa_collapsed_table_L6.qza   
 
-# filter into smaller subsets based on comparison of interest
-# ### example: filter to skin
-qiime feature-table filter-samples \
---i-table feature-table.qza \
---m-metadata-file sample-metadata.tsv \
---p-where '[body-site] IN ("left palm", "right palm")' \
---o-filtered-table filtered-table.qza
-
-
 # Per ADAM's runs: 
 # LEfSe_0 is RAvUAH, 1 is AvUAH, 2 is PSvUAH
+# LEfSe_3/4/5 is AvH, RAvH, and PSvH
+# LEfSe 6/7/8/9/10 for SSvH, SLEvH, CDvH, SSSLEvH, RAPsAvH
 
-# (1) aggregate healthy vs affected
+# DO NOT aggregate healthy vs affected
 # mapping file, class is column Diagnosis, no subclass
 /sc/arion/projects/clemej05a/kevin/ampaim/inputs/qiime_mapping_file_noctrl_AvUAH.tsv
 
+# filter into smaller subsets based on comparison of interest
 # done at login node bc fast hopefully
 qiime feature-table filter-samples \
 --i-table /sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_Cross_Disease_Pilot_0/Qiime2_0/taxa_collapsed_table_L6.qza    \
---m-metadata-file /sc/arion/projects/clemej05a/kevin/ampaim/inputs/qiime_mapping_file_noctrl_AvUAH.tsv \
---p-where '[Diagnosis] IN ("affected", "healthy")' \
---o-filtered-table /sc/arion/projects/clemej05a/kevin/ampaim/inputs/L6_AvUAH.qza
+--m-metadata-file /sc/arion/projects/clemej05a/kevin/ampaim/inputs/qiime_mapping_file_noctrl_CDvH.tsv \
+--p-where '[Diagnosis] IN ("cd", "healthy")' \
+--o-filtered-table /sc/arion/projects/clemej05a/kevin/ampaim/inputs/L6_CDvH.qza
 
-
-# (2) RA vs unaffected and healthy
-# mapping file
-/sc/arion/projects/clemej05a/kevin/ampaim/inputs/qiime_mapping_file_noctrl_RAvUAH.tsv
-
-# done at login node bc fast hopefully
+# for L7 analysis, looking for P copri
 qiime feature-table filter-samples \
---i-table /sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_Cross_Disease_Pilot_0/Qiime2_0/taxa_collapsed_table_L6.qza    \
---m-metadata-file /sc/arion/projects/clemej05a/kevin/ampaim/inputs/qiime_mapping_file_noctrl_RAvUAH.tsv \
+--i-table /sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_Cross_Disease_Pilot_0/Qiime2_0/taxa_collapsed_table_L7.qza    \
+--m-metadata-file /sc/arion/projects/clemej05a/kevin/ampaim/inputs/qiime_mapping_file_noctrl_RAvH.tsv \
 --p-where '[Diagnosis] IN ("RA", "healthy")' \
---o-filtered-table /sc/arion/projects/clemej05a/kevin/ampaim/inputs/L6_RAvUAH.qza
+--o-filtered-table /sc/arion/projects/clemej05a/kevin/ampaim/inputs/L7_RAvH.qza
 
 
-# (3) PS vs unaffected and healthy
-# mapping file
-/sc/arion/projects/clemej05a/kevin/ampaim/inputs/qiime_mapping_file_noctrl_PSvUAH.tsv
-
-# done at login node bc fast hopefully
-qiime feature-table filter-samples \
---i-table /sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_Cross_Disease_Pilot_0/Qiime2_0/taxa_collapsed_table_L6.qza    \
---m-metadata-file /sc/arion/projects/clemej05a/kevin/ampaim/inputs/qiime_mapping_file_noctrl_PSvUAH.tsv \
---p-where '[Diagnosis] IN ("RA", "healthy")' \
---o-filtered-table /sc/arion/projects/clemej05a/kevin/ampaim/inputs/L6_PSvUAH.qza
 
 
 
@@ -146,29 +235,68 @@ qiime feature-table filter-samples \
 # left-space, right-space, width
 # keep subclades and max_feature_len the same per og job file
 # same import qiime modules per above except with source activate lefse
+# the above are defaults, width 7->15, max_feature_len 60->160, dpi 72->200
 
 PYTHONPATH=/hpc/packages/minerva-centos7/anaconda3/2020.8/pkgs;
 export LC_ALL=en_US.UTF-8;
 ml anaconda3;
 source activate /sc/arion/projects/MMEDS/.modules/lefse
 
-lefse_plot_res.py $/sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_Cross_Disease_Pilot_0/Lefse_0/lefse_results.res /sc/arion/projects/clemej05a/kevin/ampaim/graphs/results_plot_RAvUAH.png --format png --max_feature_len 160 --subclades -1 --dpi 200 --left_space 0.2 --right_space 0.1 --width 12;
+lefse_plot_res.py /sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_Cross_Disease_Pilot_0/Lefse_6/lefse_results.res /sc/arion/projects/clemej05a/kevin/ampaim/graphs/results_plot_SSvH.png --format png --max_feature_len 160 --subclades -1 --dpi 200 --left_space 0.2 --right_space 0.1 --width 12;
 
-# the above are defaults, width 7->15, max_feature_len 60->160, dpi 72->200
-# do the same for lefse_1 (affected vs UAH) and lefse_2 (PS vs UAH)
+lefse_plot_res.py /sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_Cross_Disease_Pilot_0/Lefse_7/lefse_results.res /sc/arion/projects/clemej05a/kevin/ampaim/graphs/results_plot_SLEvH.png --format png --max_feature_len 160 --subclades -1 --dpi 200 --left_space 0.2 --right_space 0.1 --width 12;
 
-lefse_plot_res.py /sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_Cross_Disease_Pilot_0/Lefse_1/lefse_results.res /sc/arion/projects/clemej05a/kevin/ampaim/graphs/results_plot_AvUAH.png --format png --max_feature_len 160 --subclades -1 --dpi 200 --left_space 0.2 --right_space 0.1 --width 12;
+lefse_plot_res.py /sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_Cross_Disease_Pilot_0/Lefse_8/lefse_results.res /sc/arion/projects/clemej05a/kevin/ampaim/graphs/results_plot_CDvH.png --format png --max_feature_len 160 --subclades -1 --dpi 200 --left_space 0.2 --right_space 0.1 --width 12;
 
-lefse_plot_res.py /sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_Cross_Disease_Pilot_0/Lefse_1/lefse_results.res /sc/arion/projects/clemej05a/kevin/ampaim/graphs/results_plot_PSvUAH.png --format png --max_feature_len 160 --subclades -1 --dpi 200 --left_space 0.2 --right_space 0.1 --width 12;
+lefse_plot_res.py /sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_Cross_Disease_Pilot_0/Lefse_9/lefse_results.res /sc/arion/projects/clemej05a/kevin/ampaim/graphs/results_plot_SSSLEvH.png --format png --max_feature_len 160 --subclades -1 --dpi 200 --left_space 0.2 --right_space 0.1 --width 12;
+
+lefse_plot_res.py /sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_Cross_Disease_Pilot_0/Lefse_10/lefse_results.res /sc/arion/projects/clemej05a/kevin/ampaim/graphs/results_plot_RAPsAvH.png --format png --max_feature_len 160 --subclades -1 --dpi 200 --left_space 0.2 --right_space 0.1 --width 12;
+
+lefse_plot_res.py /sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_Cross_Disease_Pilot_0/Lefse_11/lefse_results.res /sc/arion/projects/clemej05a/kevin/ampaim/graphs/results_plot_RAvH_L7.png --format png --max_feature_len 160 --subclades -1 --dpi 200 --left_space 0.2 --right_space 0.1 --width 12;
+
 
 
 ###
 # CUTIE: jobs00-05
 ###
 
-# 00, 01 for aggregate
+# 00 for H forward
+
+mkdir /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs00/
+echo 'python /hpc/users/buk02/Repositories/CUTIE/scripts/calculate_cutie.py -i /sc/arion/projects/clemej05a/kevin/ampaim/jobs/cutie_H_forward.ini' > /sc/arion/projects/clemej05a/kevin/ampaim/jobs/cutie_H_forward.txt
+
+python /hpc/users/buk02/Repositories/labtools/scripts/generate_lsf_chimera.py -c /sc/arion/projects/clemej05a/kevin/ampaim/jobs/cutie_H_forward.txt -o /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs00/ -N cutie_H_forward -n 2 -w 4:00 -s True
+
+
+# 01 for aggregate (disease) forward
+
+mkdir /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs01/
+echo 'python /hpc/users/buk02/Repositories/CUTIE/scripts/calculate_cutie.py -i /sc/arion/projects/clemej05a/kevin/ampaim/jobs/cutie_AD_forward.ini' > /sc/arion/projects/clemej05a/kevin/ampaim/jobs/cutie_AD_forward.txt
+
+python /hpc/users/buk02/Repositories/labtools/scripts/generate_lsf_chimera.py -c /sc/arion/projects/clemej05a/kevin/ampaim/jobs/cutie_AD_forward.txt -o /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs00/ -N cutie_AD_forward -n 2 -w 4:00 -s True
+
+
+
+
+
+
+
+
+
+
 # 02, 03 for RA
 # 04, 05 for PSA/PSO===PS
+
+
+
+
+
+
+###
+# jobs00
+###
+
+
 
 mkdir /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs00/
 echo 'python /hpc/users/buk02/Repositories/CUTIE/scripts/calculate_cutie.py -i /sc/arion/projects/clemej05a/kevin/ampaim/jobs/ra_forward_config.ini' > /sc/arion/projects/clemej05a/kevin/ampaim/jobs/cutie_ra_forward.txt
