@@ -28,7 +28,8 @@ source activate qiime2-2020.8.0;
 # next run with all samples incl EISER
 /sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_Cross_Disease_Pilot_0
 
-# newer run TBD
+# correct samples of 141 with 2 missing fixed
+/sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_Full_AMP_AIM_MSQ_141_0/Qiime2_0
 
 
 
@@ -37,19 +38,18 @@ source activate qiime2-2020.8.0;
 ###
 
 inputs/
-	Qiime2_0_KB_noctrl_noeiser 		# everything but blank/glass controls and eiser
 	Qiime2_2_KB						# everything, but no control no eiser and no healthy 
 	Qiime2_1_KB						# psa of eiser and nyu
 	Qiime2_nyu         			    # psa, pso, ra no healthy
-	Qiime2_psara 					# psa and ra no healthy
-	
+	Qiime2_psara 					# psa and ra no healthy	
 	Qiime2_2a_KB					# DMM on everything incl healthy but no control no eiser
 	Qiime2_2b_KB					# DMM on everything w/o healthy, no control no eiser
 	Qiime2_nyu_dmm
 	Qiime2_psara_dmm
-	Qiime2_0_MSQ141					# MSQ 141 with all samples
+	Qiime2_0_MSQ141					# MSQ 141 with all samples (24 not 22)
+	Qiime2_0_KB_noctrl_noeiser 		# everything but blank/glass controls and eiser
+	Qiime2_0_KB_noctrl_noeiser_nocd # everything but blank/glass, eiser, and cd
 
-/sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_Full_AMP_AIM_MSQ_141_0/Qiime2_0
 
 outputs/
 	visualizations_dir_L3 			# various DMM
@@ -61,7 +61,9 @@ outputs/
 	jobs05							# MSQ141 run
 	jobs06							# merge, upsetr examples
 	jobs07							# AB MSQ135 - MSQ141 help
-	jobs08							# batch correction
+	jobs08a							# batch correction
+	jobs08							# batch correction no cd
+
 
 graphs/
 # LEfSe_0 is RAvUAH, 1 is AvUAH, 2 is PSvUAH
@@ -91,6 +93,12 @@ jobfile_2.lsf
 
 # jobfile with nyu only, no healthy, no ctrl for DMM 
 nyu.lsf
+
+# no control no eiser
+jobfile_kb0_noctrl_noeiser.lsf
+
+# jobfile with no eiser, no control, no cd
+jobfile_noctrl_noeiser_nocd.lsf
 
 
 # Everything has contaminants except the two tables that specifically say “contams_removed”, which are an ASV table and a genus level table. There’s also a “taxa_removed” file, which just lists the contams that were filtered out
@@ -129,9 +137,15 @@ qiime feature-table filter-samples \
 --o-filtered-table /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs03/L6_PsOvH.qza
 
 
+###
+# Merge is in jobfile batch_beta.lsf
+###
+
+batch_beta_nocd.lsf
+
 
 ###
-# Testing for batch effects
+# Testing for batch effects jobs08, jobs09 with no cd
 ###
 
 # try merging $RUN_Qiime2/rep_seqs_table.qz from both runs
@@ -140,17 +154,66 @@ qiime feature-table filter-samples \
 # add column for batch 
 # create distance matrix
 # do beta group sig and emperor viz
+# this is all done in jobs07
 
+
+# filter samples from otu table
+qiime feature-table filter-samples \
+--i-table  /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Qiime2_0_KB_batch_nocd/otu_table.qza \
+--m-metadata-file /sc/arion/projects/clemej05a/kevin/ampaim/inputs/qiime_mapping_file_batch_nocd.tsv \
+--p-where '[SpecimenType] IN ("fecal", "Fecal")' \
+--o-filtered-table /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs08/otu_table.qza
 
 # convert otu qza feature table to biom
+qiime tools export \
+  --input-path /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs08/otu_table.qza \
+  --output-path /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs08/ #feature-table.biom
+
 # convert biom to tsv
+biom convert -i /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs08/feature-table.biom -o /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs08/otu_table.tsv --to-tsv
+
+# manually delete first row
+sed '1d' /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs08/otu_table.tsv > /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs08/otu_table_del1.tsv 
+ 
+# remove '#' from out #OTU ID
 
 # apply batch correction with qiime mapping file
-/sc/arion/projects/MMEDS/batch_correction/batch_correction_runner.py
+# /sc/arion/projects/MMEDS/batch_correction/batch_correction_runner.py
+python /sc/arion/projects/MMEDS/batch_correction/batch_correction_runner.py -i /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs08/otu_table_del1.tsv -m /sc/arion/projects/clemej05a/kevin/ampaim/inputs/qiime_mapping_file_batch_nocd.tsv -b RawDataProtocolID -o /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs08/otu_table_del1_batch_correct.tsv
+
+# try with -g diagnosis
+python /sc/arion/projects/MMEDS/batch_correction/batch_correction_runner.py -i /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs08/otu_table_del1.tsv -m /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs08/qiime_mapping_file_batch_correct.txt -b RawDataProtocolID -g Diagnosis -o /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs08/otu_table_del1_batch_correct_diagnosis.tsv
+
+# add '#OTU ID' to the first empty entry of the first row
 
 # convert tsv to biom
+biom convert --to-hdf5 -i /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs08/otu_table_del1_batch_correct.tsv -o /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs08/otu_table_del1_batch_correct.biom
+
 # convert biom to qza frequency feature table
+qiime tools import --type 'FeatureTable[Frequency]' --input-path /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs08/otu_table_del1_batch_correct.biom --output-path /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs08/otu_table_del1_batch_correct.qza 
+
+# copy corrected qza
+cp /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs08/otu_table_del1_batch_correct.qza /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Qiime2_0_KB_batch_correct_nocd/otu_table_del1_batch_correct.qza
+
 # rerun new batch_beta.lsf 
+
+###
+# MSQ141
+###
+
+# in inputs
+mkdir Q2_MSQ141
+mkdir Q2_MSQ141_ss
+
+# copy qiime mapping files from ipynb subsetted on relevant samples
+cp qiime_mapping_file_MSQ141_ss.tsv Q2_MSQ141_ss
+cp qiime_mapping_file_MSQ141.tsv Q2_MSQ141
+
+# cp otu tables (prior to batch correction)
+cp /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Qiime2_0_KB_batch_nocd/otu_table.qza Q2_MSQ141/
+cp /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Qiime2_0_KB_batch_nocd/otu_table.qza Q2_MSQ141_ss/
+cp /sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_Full_AMP_AIM_MSQ_141_0/Qiime2_0/rep_seqs_table.qza Q2_MSQ141/
+cp /sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_Full_AMP_AIM_MSQ_141_0/Qiime2_0/rep_seqs_table.qza Q2_MSQ141_ss/
 
 
 
