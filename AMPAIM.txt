@@ -12,10 +12,8 @@ export LC_ALL=en_US.UTF-8;
 ml anaconda3;
 source activate qiime2-2020.8.0;
 
-
-# twins shotgun data
-/sc/arion/projects/clemej05a/PsA_IL17/inputs/Metagenomes/combined
-
+# MMEDS cologin
+/opt/collab/bin/cologin mmedsadmin
 
 
 ###
@@ -32,7 +30,6 @@ source activate qiime2-2020.8.0;
 /sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_Full_AMP_AIM_MSQ_141_0/Qiime2_0
 
 
-
 ###
 # File Structure
 ###
@@ -47,9 +44,10 @@ inputs/
 	Qiime2_nyu_dmm
 	Qiime2_psara_dmm
 	Qiime2_0_MSQ141					# MSQ 141 with all samples (24 not 22)
-	Qiime2_0_KB_noctrl_noeiser 		# everything but blank/glass controls and eiser
-	Qiime2_0_KB_noctrl_noeiser_nocd # everything but blank/glass, eiser, and cd
-
+	Qiime2_0_KB_noctrl_noeiser 		# MSQ138 everything but blank/glass controls and eiser
+	Qiime2_0_KB_noctrl_noeiser_nocd # MSQ138 but blank/glass, eiser, and cd
+	Qiime2_0_KB_batch_correct_nocd	# MSQ138 + 141
+	Qiime2_0_KB_batch_nocd          # MSQ138 + 141 
 
 outputs/
 	visualizations_dir_L3 			# various DMM
@@ -63,16 +61,23 @@ outputs/
 	jobs07							# AB MSQ135 - MSQ141 help
 	jobs08a							# batch correction
 	jobs08							# batch correction no cd
+	jobs09							# lefse for merged batch 138 + 141 RA
+	jobs10							# '' for PsO				
+	jobs11							# '' for PsA
+	jobs12							# '' for SS
+	jobs13							# '' for sle
+	jobs14							# '' for sicca 
+	jobs15							# SS vs SICCA MSQ138 only
+	jobs16							# '' AvH
+	jobs17							# '' L7 AvH pilot only
+	jobs18							# '' L7 AvH merge
+
 
 
 graphs/
 # LEfSe_0 is RAvUAH, 1 is AvUAH, 2 is PSvUAH
 # LEfSe_3/4/5 is AvH, RAvH, and PSvH
 # LEfSe 6/7/8/9/10 for SSvH, SLEvH, CDvH, SSSLEvH, RAPsAvH
-
-LEfSe_11 for PSAvH
-LEfSe_12 for PSOvH
-
 
 
 ###
@@ -113,16 +118,12 @@ jobfile_noctrl_noeiser_nocd.lsf
 # the mapping file for fix66 was copied to noctrl to not change the lsf script because of all the declarations of $RUN_Qiime2_KB
 
 
-# convert PCOA to tsv
-qiime tools export \
---input-path /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Qiime2_psara_dmm/core_metrics_results/weighted_unifrac_pcoa_results.qza \
---output-path /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Qiime2_psara_dmm/core_metrics_results/
-
+###
+# LEfSe filtering
+### 
 
 ###
-# LEfSe filter
-
-PsA PsO
+# PsA PsO
 
 qiime feature-table filter-samples \
 --i-table /sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_Cross_Disease_Pilot_0/Qiime2_0/taxa_collapsed_table_L6.qza    \
@@ -135,6 +136,110 @@ qiime feature-table filter-samples \
 --m-metadata-file /sc/arion/projects/clemej05a/kevin/ampaim/inputs/qiime_mapping_file_psohealthy.tsv \
 --p-where '[Diagnosis] IN ("pso", "healthy")' \
 --o-filtered-table /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs03/L6_PsOvH.qza
+
+
+###
+# RA
+
+# the batch corrected file is -> /inputs/Qiime2_0_KB_batch_correct_nocd/otu_table_del1_batch_correct.qza
+
+Qiime2_0_KB_batch_correct_nocd	# MSQ138 + 141
+Qiime2_0_KB_batch_nocd          # MSQ138 + 141 
+
+qiime feature-table filter-samples \
+--i-table /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Qiime2_0_KB_batch_nocd_full/taxa_collapsed_table_L6.qza    \
+--m-metadata-file /sc/arion/projects/clemej05a/kevin/ampaim/inputs/qiime_mapping_file_batch_nocd.tsv \
+--p-where '[Diagnosis] IN ("RA", "healthy")' \
+--o-filtered-table /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs09/L6_RAvH.qza
+
+qiime_mapping_file_merge_RAvH.tsv
+
+# must submit from mmeds cologin
+# chmod 777 the files and the directory of the output/jobs09 folder
+
+qiime feature-table filter-samples \
+--i-table /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Qiime2_0_KB_batch_nocd_full/taxa_collapsed_table_L6.qza    \
+--m-metadata-file /sc/arion/projects/clemej05a/kevin/ampaim/inputs/qiime_mapping_file_batch_nocd.tsv \
+--p-where '[Diagnosis] IN ("RA", "healthy")' \
+--o-filtered-table /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs09/L6_RAvH.qza
+
+
+### 
+# PsO
+
+qiime feature-table filter-samples \
+--i-table /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Qiime2_0_KB_batch_nocd_full/taxa_collapsed_table_L6.qza    \
+--m-metadata-file /sc/arion/projects/clemej05a/kevin/ampaim/inputs/qiime_mapping_file_batch_nocd.tsv \
+--p-where '[Diagnosis] IN ("pso", "healthy")' \
+--o-filtered-table /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs10/L6_PsOvH.qza
+
+###
+# PsA
+
+qiime feature-table filter-samples \
+--i-table /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Qiime2_0_KB_batch_nocd_full/taxa_collapsed_table_L6.qza    \
+--m-metadata-file /sc/arion/projects/clemej05a/kevin/ampaim/inputs/qiime_mapping_file_batch_nocd.tsv \
+--p-where '[Diagnosis] IN ("psa", "healthy")' \
+--o-filtered-table /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs11/L6_PsAvH.qza
+
+###
+# ss 12
+# sle 13
+# sicca 14
+# AvH 16,17,18
+
+qiime feature-table filter-samples \
+--i-table /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Qiime2_0_KB_batch_nocd_full/taxa_collapsed_table_L6.qza    \
+--m-metadata-file /sc/arion/projects/clemej05a/kevin/ampaim/inputs/qiime_mapping_file_batch_nocd.tsv \
+--p-where '[Diagnosis] IN ("ss", "healthy")' \
+--o-filtered-table /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs12/L6_SSvH.qza
+
+qiime feature-table filter-samples \
+--i-table /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Qiime2_0_KB_batch_nocd_full/taxa_collapsed_table_L6.qza    \
+--m-metadata-file /sc/arion/projects/clemej05a/kevin/ampaim/inputs/qiime_mapping_file_batch_nocd.tsv \
+--p-where '[Diagnosis] IN ("sle", "healthy")' \
+--o-filtered-table /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs13/L6_SLEvH.qza
+
+
+qiime feature-table filter-samples \
+--i-table /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Qiime2_0_KB_batch_nocd_full/taxa_collapsed_table_L6.qza    \
+--m-metadata-file /sc/arion/projects/clemej05a/kevin/ampaim/inputs/qiime_mapping_file_batch_nocd.tsv \
+--p-where '[Diagnosis] IN ("non-sjogrens sicca", "healthy")' \
+--o-filtered-table /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs14/L6_SICCAvH.qza
+
+
+qiime feature-table filter-samples \
+--i-table /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Qiime2_0_KB_batch_nocd_full/taxa_collapsed_table_L6.qza    \
+--m-metadata-file /sc/arion/projects/clemej05a/kevin/ampaim/inputs/qiime_mapping_file_batch_nocd.tsv \
+--p-where '[Diagnosis] IN ("non-sjogrens sicca", "healthy", "ss", "sle", "RA", "psa", 'pso")' \
+--o-filtered-table /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs16/L6_AvH.qza
+
+
+qiime feature-table filter-samples \
+--i-table /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Qiime2_0_KB_noctrl_noeiser_nocd/taxa_collapsed_table_L7.qza \
+--m-metadata-file /sc/arion/projects/clemej05a/kevin/ampaim/inputs/qiime_mapping_file_noctrl_noeiser_nocd.tsv \
+--p-where '[Diagnosis] IN ("non-sjogrens sicca", "healthy", "ss", "sle", "RA", "psa", 'pso")' \
+--o-filtered-table /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs17/L7_AvH.qza
+
+
+
+qiime feature-table filter-samples \
+--i-table /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Qiime2_0_KB_batch_nocd_full/taxa_collapsed_table_L7.qza    \
+--m-metadata-file /sc/arion/projects/clemej05a/kevin/ampaim/inputs/qiime_mapping_file_batch_nocd.tsv \
+--p-where '[Diagnosis] IN ("non-sjogrens sicca", "healthy", "ss", "sle", "RA", "psa", 'pso")' \
+--o-filtered-table /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs18/L7_AvH.qza
+
+
+###
+# SS vs SICCA jobs15
+###
+
+qiime feature-table filter-samples \
+--i-table /sc/arion/projects/clemej05a/kevin/ampaim/inputs/MSQ141_ssnss/taxa_collapsed_table_L6.qza    \
+--m-metadata-file /sc/arion/projects/clemej05a/kevin/ampaim/inputs/qiime_mapping_file_MSQ141_meds_ss.tsv \
+--p-where '[Diagnosis] IN ("ss", "non-sjogrens sicca")' \
+--o-filtered-table /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs15/L6_SSvNSS.qza
+
 
 
 ###
@@ -206,13 +311,13 @@ mkdir Q2_MSQ141
 mkdir Q2_MSQ141_ss
 
 # copy qiime mapping files from ipynb subsetted on relevant samples
-cp qiime_mapping_file_MSQ141_ss.tsv Q2_MSQ141_ss
-cp qiime_mapping_file_MSQ141.tsv Q2_MSQ141
+cp qiime_mapping_file_MSQ141_meds_ss.tsv Q2_MSQ141_ss
+cp qiime_mapping_file_MSQ141_meds.tsv Q2_MSQ141
 
 # cp otu tables (prior to batch correction)
 cp /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Qiime2_0_KB_batch_nocd/otu_table.qza Q2_MSQ141/
 cp /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Qiime2_0_KB_batch_nocd/otu_table.qza Q2_MSQ141_ss/
-cp /sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_Full_AMP_AIM_MSQ_141_0/Qiime2_0/rep_seqs_table.qza Q2_MSQ141/
+cp /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Qiime2_0_KB_batch_nocd/rep_seqs_table.qza Q2_MSQ141/
 cp /sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_Full_AMP_AIM_MSQ_141_0/Qiime2_0/rep_seqs_table.qza Q2_MSQ141_ss/
 
 
@@ -246,6 +351,21 @@ qiime tools export \
 --output-path /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Qiime2_0_KB_fix66/core_metrics_results/
 
 
+
+# convert PCOA to tsv
+qiime tools export \
+--input-path /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Qiime2_psara_dmm/core_metrics_results/weighted_unifrac_pcoa_results.qza \
+--output-path /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Qiime2_psara_dmm/core_metrics_results/
+
+
+# unweighted
+RUN_Qiime2_KB=/sc/arion/projects/clemej05a/kevin/ampaim/inputs/Qiime2_0_KB_batch_nocd_full/
+qiime diversity beta-group-significance \
+--i-distance-matrix $RUN_Qiime2_KB/core_metrics_results/unweighted_unifrac_distance_matrix.qza \
+--m-metadata-file $RUN_Qiime2_KB/qiime_mapping_file_batch_nocd.tsv \
+--m-metadata-column Diagnosis \
+--o-visualization $RUN_Qiime2_KB/unweighted_Diagnosis_significance.qzv \
+--p-pairwise
 
 
 ###
@@ -283,9 +403,6 @@ qiime feature-table filter-samples \
 --m-metadata-file /sc/arion/projects/clemej05a/kevin/ampaim/inputs/qiime_mapping_file_noctrl_RAvH.tsv \
 --p-where '[Diagnosis] IN ("RA", "healthy")' \
 --o-filtered-table /sc/arion/projects/clemej05a/kevin/ampaim/inputs/L7_RAvH.qza
-
-
-
 
 
 ###
@@ -337,19 +454,6 @@ mkdir /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs01/
 echo 'python /hpc/users/buk02/Repositories/CUTIE/scripts/calculate_cutie.py -i /sc/arion/projects/clemej05a/kevin/ampaim/jobs/cutie_AD_forward.ini' > /sc/arion/projects/clemej05a/kevin/ampaim/jobs/cutie_AD_forward.txt
 
 python /hpc/users/buk02/Repositories/labtools/scripts/generate_lsf_chimera.py -c /sc/arion/projects/clemej05a/kevin/ampaim/jobs/cutie_AD_forward.txt -o /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs00/ -N cutie_AD_forward -n 2 -w 4:00 -s True
-
-
-
-
-
-
-
-
-
-
-# 02, 03 for RA
-# 04, 05 for PSA/PSO===PS
-
 
 
 
@@ -478,16 +582,9 @@ python /hpc/users/buk02/Repositories/labtools/scripts/generate_lsf_chimera.py -c
 
 
 
-
-
-
-
-
-
-
-
-
-
+### 
+# CUTIE config
+###
 
 
 /sc/arion/projects/clemej05a/kevin/ampaim/jobs/ra_forward_config.ini 

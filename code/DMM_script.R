@@ -1,10 +1,13 @@
 # DMM Tutorial: https://microbiome.github.io/tutorials/DMM.html
 
-#library(BiocManager)
-#BiocManager::install("microbiome")
-#BiocManager::install("DirichletMultinomial")
-#install.packages("remotes")
-#remotes::install_github("microbiome/microbiome")
+# install.packages('BiocManager')
+# library(BiocManager)
+# BiocManager::install("microbiome")
+# BiocManager::install("DirichletMultinomial")
+# install.packages("remotes")
+# remotes::install_github("microbiome/microbiome")
+# install.packages('Cairo')
+# install.packages('svglite')
 
 library(microbiome)
 library(DirichletMultinomial)
@@ -15,19 +18,16 @@ library(ggplot2)
 library(Cairo)
 
 # Load OTU table
-base.path <- "/sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_Puerto_Rico_New_MetaData_0/DMM/"
-viz.path <- paste(base.path, 'visualizations_dir/', sep="")
-df <- read.csv(paste(base.path, 'taxa_feature_table_L6.tsv', sep=""), sep='\t')
-# df <- read.csv(paste(base.path, 'feature_table_heatmap1122.tsv', sep=""), sep='\t')
+base.path <- "/Users/KevinBu/Desktop/clemente_lab/Projects/twinsra/"
+viz.path <- paste(base.path, 'outputs/visualizations_dir/', sep="")
+df <- read.csv(paste(base.path, 'inputs/Qiime2_0_KB/counts_table_L3_Q2.csv', sep=""))#, sep='\t')
+
 rownames(df) <- df[,1]
 df <- df[-c(1)] 
-# Pick the OTU count matrix
-# and convert it into samples x taxa format
-count_df <- as.matrix(t(df))
+count_df <- as.matrix(df)
 
-print(count_df)
-# Fit the DMM Model, speeding things up by allowing a max of 5 community types
-fit <- lapply(1:8, dmn, count = count_df, verbose=TRUE)
+# Fit the DMM Model, starts being slow at 7+
+fit <- lapply(1:6, dmn, count = count_df, verbose=TRUE)
 
 # Check model fit
 lplc <- base::sapply(fit, DirichletMultinomial::laplace) # AIC / BIC / Laplace
@@ -39,11 +39,12 @@ lines(bic, type="b", lty = 3)
 df.fit <- data.frame(cbind(lplc, aic, bic))
 write.table(df.fit, "DMM_cluster_results.tsv", sep='\t')
 
+# find replace x = 1:8 with 1:6
 options(bitmapType='cairo')
 p <- ggplot(data = df.fit) +
-    geom_point(aes(x = 1:8, y = lplc, color = 'blue')) + geom_line(aes(x = 1:8, y = lplc, color = 'blue')) +
-    geom_point(aes(x = 1:8, y = aic, color = 'green')) + geom_line(aes(x = 1:8, y = aic, color = 'green')) +  
-    geom_point(aes(x = 1:8, y = bic, color = 'magenta')) + geom_line(aes(x = 1:8, y = bic, color = 'magenta')) +
+    geom_point(aes(x = 1:6, y = lplc, color = 'blue')) + geom_line(aes(x = 1:6, y = lplc, color = 'blue')) +
+    geom_point(aes(x = 1:6, y = aic, color = 'green')) + geom_line(aes(x = 1:6, y = aic, color = 'green')) +  
+    geom_point(aes(x = 1:6, y = bic, color = 'magenta')) + geom_line(aes(x = 1:6, y = bic, color = 'magenta')) +
     labs(x  ="Maximum Number of Community Types", y = "Quality of fit") +
     scale_color_discrete(name = "Method", labels=c('Laplace', 'AIC', 'BIC')) +
     theme_light() +
@@ -54,6 +55,7 @@ p <- ggplot(data = df.fit) +
     )
 show(p)
 ggsave(paste(viz.path, "DMM_bestfit_relabd.svg", sep=""), p, width=5, height=5)
+
 # Pick optimal model
 lplc_best <- fit[[which.min(unlist(lplc))]]
 aic_best <- fit[[which.min(unlist(aic))]]

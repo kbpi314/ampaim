@@ -21,8 +21,12 @@ library(Cairo)
 base.path <- "/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/"
 #viz.path <- paste(base.path, 'outputs/visualizations_dir_L3/', sep="")
 #df <- read.csv(paste(base.path, 'inputs/Qiime2_0_KB_noctrl_noeiser/counts_table_L3_Q2.csv', sep=""))#, sep='\t')
-viz.path <- paste(base.path, 'outputs/visualizations_dir_nohealthy_L3/', sep="")
-df <- read.csv(paste(base.path, 'inputs/Qiime2_2_KB/counts_table_L3_Q2.csv', sep=""))#, sep='\t')
+#viz.path <- paste(base.path, 'outputs/visualizations_dir_nohealthy_L6/', sep="")
+#df <- read.csv(paste(base.path, 'inputs/Qiime2_2_KB/counts_table_L6_Q2.csv', sep=""))#, sep='\t')
+viz.path <- paste(base.path, 'outputs/visualizations_dir_psara/', sep="")
+df <- read.csv(paste(base.path, 'inputs/Qiime2_psara/counts_table_L6_Q2.csv', sep=""))#, sep='\t')
+#viz.path <- paste(base.path, 'outputs/visualizations_dir_nyu/', sep="")
+#df <- read.csv(paste(base.path, 'inputs/Qiime2_nyu/counts_table_L6_Q2.csv', sep=""))#, sep='\t')
 
 rownames(df) <- df[,1]
 df <- df[-c(1)] 
