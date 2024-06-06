@@ -18,9 +18,9 @@ library(ggplot2)
 library(Cairo)
 
 # Load OTU table
-base.path <- "/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/"
-viz.path <- paste(base.path, 'outputs/jobs19/', sep="")
-df <- read.csv(paste(base.path, 'inputs/Qiime2_0_KB_batch_correct_nocd/counts_L6.csv', sep=""))#, sep='\t')
+base.path <- "/Users/KevinBu/Desktop/clemente_lab/Projects/twinsra/"
+viz.path <- paste(base.path, 'outputs/visualizations_dir/', sep="")
+df <- read.csv(paste(base.path, 'inputs/Qiime2_0_KB/counts_table_L3_Q2.csv', sep=""))#, sep='\t')
 
 rownames(df) <- df[,1]
 df <- df[-c(1)] 
@@ -42,17 +42,17 @@ write.table(df.fit, "DMM_cluster_results.tsv", sep='\t')
 # find replace x = 1:8 with 1:6
 options(bitmapType='cairo')
 p <- ggplot(data = df.fit) +
-  geom_point(aes(x = 1:6, y = lplc, color = 'blue')) + geom_line(aes(x = 1:6, y = lplc, color = 'blue')) +
-  geom_point(aes(x = 1:6, y = aic, color = 'green')) + geom_line(aes(x = 1:6, y = aic, color = 'green')) +  
-  geom_point(aes(x = 1:6, y = bic, color = 'magenta')) + geom_line(aes(x = 1:6, y = bic, color = 'magenta')) +
-  labs(x  ="Maximum Number of Community Types", y = "Quality of fit") +
-  scale_color_discrete(name = "Method", labels=c('Laplace', 'AIC', 'BIC')) +
-  theme_light() +
-  theme(legend.position = c(0.2, 0.75),
+    geom_point(aes(x = 1:6, y = lplc, color = 'blue')) + geom_line(aes(x = 1:6, y = lplc, color = 'blue')) +
+    geom_point(aes(x = 1:6, y = aic, color = 'green')) + geom_line(aes(x = 1:6, y = aic, color = 'green')) +  
+    geom_point(aes(x = 1:6, y = bic, color = 'magenta')) + geom_line(aes(x = 1:6, y = bic, color = 'magenta')) +
+    labs(x  ="Maximum Number of Community Types", y = "Quality of fit") +
+    scale_color_discrete(name = "Method", labels=c('Laplace', 'AIC', 'BIC')) +
+    theme_light() +
+    theme(legend.position = c(0.2, 0.75),
         legend.box.background = element_rect(color="grey"),
         legend.text = element_text(size = 10),
         text = element_text(size = 14)
-  )
+    )
 show(p)
 ggsave(paste(viz.path, "DMM_bestfit_relabd.svg", sep=""), p, width=5, height=5)
 
@@ -81,7 +81,7 @@ for (k in seq(ncol(fitted(lplc_best)))) {
     mutate(OTU = factor(OTU, levels = unique(OTU))) %>%
     # Only show the most important drivers
     filter(abs(value) > quantile(abs(value), 0.8))  
-  #filter(abs(value) > value_thresh)  
+    #filter(abs(value) > value_thresh)  
   
   p <- ggplot(e, aes(x = OTU, y = value)) +
     geom_bar(stat = "identity") +
@@ -100,7 +100,7 @@ for (k in seq(ncol(fitted(aic_best)))) {
     mutate(OTU = factor(OTU, levels = unique(OTU))) %>%
     # Only show the most important drivers
     filter(abs(value) > quantile(abs(value), 0.8))  
-  #filter(abs(value) > value_thresh)  
+    #filter(abs(value) > value_thresh)  
   
   p <- ggplot(e, aes(x = OTU, y = value)) +
     geom_bar(stat = "identity") +
@@ -119,7 +119,7 @@ for (k in seq(ncol(fitted(bic_best)))) {
     mutate(OTU = factor(OTU, levels = unique(OTU))) %>%
     # Only show the most important drivers
     filter(abs(value) > quantile(abs(value), 0.8))  
-  #filter(abs(value) > value_thresh)  
+    #filter(abs(value) > value_thresh)  
   
   p <- ggplot(e, aes(x = OTU, y = value)) +
     geom_bar(stat = "identity") +
@@ -132,13 +132,13 @@ for (k in seq(ncol(fitted(bic_best)))) {
 
 lplc_ass.df <- data.frame(cbind(names(lplc_ass), matrix(unlist(lplc_ass), nrow=length(lplc_ass), byrow=TRUE)))
 colnames(lplc_ass.df) <- c("HostSubjectId", "dmm.grp")
-write.table(lplc_ass.df, file = paste(viz.path, 'dmm_lplc_relabd_assign.tsv', sep=""), sep='\t', row.names = FALSE)
+write.table(lplc_ass.df, file = paste(base.path, 'dmm_lplc_relabd_assign.tsv', sep=""), sep='\t', row.names = FALSE)
 
 aic_ass.df <- data.frame(cbind(names(aic_ass), matrix(unlist(aic_ass), nrow=length(aic_ass), byrow=TRUE)))
 colnames(aic_ass.df) <- c("HostSubjectId", "dmm.grp")
-write.table(aic_ass.df, file = paste(viz.path, 'dmm_aic_relabd_assign.tsv', sep=""), sep='\t', row.names = FALSE)
+write.table(aic_ass.df, file = paste(base.path, 'dmm_aic_relabd_assign.tsv', sep=""), sep='\t', row.names = FALSE)
 
 bic_ass.df <- data.frame(cbind(names(bic_ass), matrix(unlist(bic_ass), nrow=length(bic_ass), byrow=TRUE)))
 colnames(bic_ass.df) <- c("HostSubjectId", "dmm.grp")
-write.table(bic_ass.df, file = paste(viz.path, 'dmm_bic_relabd_assign.tsv', sep=""), sep='\t', row.names = FALSE)
+write.table(bic_ass.df, file = paste(base.path, 'dmm_bic_relabd_assign.tsv', sep=""), sep='\t', row.names = FALSE)
 

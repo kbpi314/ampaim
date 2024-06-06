@@ -3,21 +3,21 @@ library(UpSetR)
 
 # example of list input (list of named vectors)
 listInput <- list(
-  RA = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs04/RA_lefse_healthy_sig.tsv', sep='\t',header=TRUE)$Taxa)[[1]],
+  RA = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs04/L7_RA_lefse_healthy_sig.tsv', sep='\t',header=TRUE)$Taxa)[[1]],
   #PS = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs04/PS_lefse_healthy_sig.tsv', sep='\t',header=TRUE)$Taxa)[[1]],
   #A = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs04/A_lefse_healthy_sig.tsv', sep='\t',header=TRUE)$Taxa)[[1]],
   #RAPsA = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs04/RAPsA_lefse_healthy_sig.tsv', sep='\t',header=TRUE)$Taxa)[[1]],
-  SS = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs04/SS_lefse_healthy_sig.tsv', sep='\t',header=TRUE)$Taxa)[[1]],
+  SS = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs04/L7_SS_lefse_healthy_sig.tsv', sep='\t',header=TRUE)$Taxa)[[1]],
   #SSSLE = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs04/SSSLE_lefse_healthy_sig.tsv', sep='\t',header=TRUE)$Taxa)[[1]],
-  NSS = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs04/NSS_lefse_healthy_sig.tsv', sep='\t',header=TRUE)$Taxa)[[1]],
-  SLE = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs04/SLE_lefse_healthy_sig.tsv', sep='\t',header=TRUE)$Taxa)[[1]],
-  PsA = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs04/PsA_lefse_healthy_sig.tsv', sep='\t',header=TRUE)$Taxa)[[1]],
-  PsO = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs04/PsO_lefse_healthy_sig.tsv', sep='\t',header=TRUE)$Taxa)[[1]]
+  NSS = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs04/L7_NSS_lefse_healthy_sig.tsv', sep='\t',header=TRUE)$Taxa)[[1]],
+  SLE = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs04/L7_SLE_lefse_healthy_sig.tsv', sep='\t',header=TRUE)$Taxa)[[1]],
+  PsA = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs04/L7_PsA_lefse_healthy_sig.tsv', sep='\t',header=TRUE)$Taxa)[[1]],
+  PsO = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs04/L7_PsO_lefse_healthy_sig.tsv', sep='\t',header=TRUE)$Taxa)[[1]]
   # CD = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs04/CD_lefse_healthy_sig.tsv', sep='\t',header=TRUE)$Taxa)[[1]]
 )
 
 
-pdf(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs04/LEfSe_UpSetR_healthy.pdf',
+pdf(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs04/L7_LEfSe_UpSetR_healthy.pdf',
     width=6,
     height=6)
 upset(fromList(listInput),#fromExpression(input), 
