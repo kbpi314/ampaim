@@ -20,19 +20,11 @@
 ############################################################################
 
 ### Load libraries ###
-#library(reshape2)
-#library(phyloseq)
-#library(vegan)
-#library(ade4)
-#library(PMCMRplus)
 library(ggplot2)
 library(ggpubr)
-#library(ggthemes)
-#library(ggrepel)
-#library(tidyverse)
-#library(dplyr)
+library(tidyverse)
+library(rstatix)
 library(tidyr)
-#library(scales)
 library(RColorBrewer)
 
 
@@ -119,24 +111,21 @@ write.csv(file = ft.all, stats.table.all)
 ############################################################################
 ############################################################################
 
-### Analytes plots - all ###
+### alpha plot ###
 
 # background theme
 bkg <- theme_bw() +
-  theme(axis.text.x = element_text(size = 24, face = "bold", color = "black")) +
-  theme(axis.text.y = element_text(size = 18))+#, color = "black")) +
+  theme(axis.text.x = element_text(size = 18, color = "black")) +
+  theme(axis.text.y = element_text(size = 18))+
+  theme(axis.title.x = element_text(size = 24, color = "black", face = "bold")) +
   theme(axis.title.y = element_text(size = 24, color = "black", face = "bold")) +
   theme(axis.title.y = element_text(margin = unit(c(0, 8, 0, 0), "mm"))) +
   theme(legend.text = element_text(size = 18, color = "black")) +
   theme(legend.title = element_text(size = 24, face = "bold", color = "black"))
 
 # choose colors
-#col1 <- c("#929aab", "#ce2525")
-#col2 <- c("#f3a333", "#0074e4", "#8f8787")
-col3 <- 
-  
-# choose line types
-line1 <- c("solid", "dashed", "dotted")
+col1 <- colorRampPalette(brewer.pal(9, "Spectral"))(length(unique(d.final$Diagnosis)))
+col1 <- colorRampPalette(brewer.pal(9, "Set2"))(length(unique(df$Diagnosis)))
 
 # variable of interest
 a <- 'shannon_entropy'
@@ -150,42 +139,22 @@ dx.order = c("Healthy", "RA", "PsA", "PsO", "SLE", "SS", "NSS")
 d.final$Diagnosis <- factor(d.final$Diagnosis, levels = dx.order)
 
 # get all pairs
-pairs <- combn(dx.order, 2, simplify = FALSE)
+# pairs <- combn(dx.order, 2, simplify = FALSE)
 
 # Convert each pair into a list element
-pair_list <- lapply(seq_along(pairs), function(i) pairs[[i]])
+# pair_list <- lapply(seq_along(pairs), function(i) pairs[[i]])
 
 # create plot
 p <- ggplot(d.final, aes(x = Diagnosis, y = shannon_entropy, fill = Diagnosis)) +
   geom_boxplot() +
-  theme_minimal() +
-  scale_fill_manual(values = colorRampPalette(brewer.pal(9, "Spectral"))(length(unique(df_alpha$Diagnosis)))) + 
+  bkg + 
+  # theme_minimal() +
+  theme(legend.position = "none") + 
   labs(x = "Diagnosis", y = "Shannon Entropy") +
-  geom_pwc(method = 'wilcox.test', label = 'p.signif',  hide.ns = TRUE) # + 
-  #stat_compare_means(comparisons = pair_list,
-  #                   label = "p.signif", 
-  #                   method = "wilcox.test", 
-  #                   hide.ns = TRUE)
+  geom_jitter(width = 0.2, alpha = 0.7, size = 2) + 
+  geom_pwc(method = 'wilcox.test', label = 'p.signif',  hide.ns = TRUE, p.adjust.method='none') +
+  scale_fill_manual(values = col1)#  + 
 
 fpb = paste(dir, filename_box.plot, sep = "")
 print(p)
-ggsave(fpb, plot = p, width = 4.5, height = 5, units = "in", dpi = 300)
-
-
-# plot boxplot
-p <- ggplot(data = d.final, aes(x = Diagnosis, y = shannon_entropy, fill = Diagnosis)) +
-  stat_summary(fun.data = stats.whiskers, geom = "errorbar", 
-               color = "black", size = 0.8, width = 0.3) +
-  stat_summary(fun.data = stats.boxplot, geom = "crossbar", 
-               color = "black", size = 0.5, width = 0.5) +
-  geom_jitter(width = 0.1, size = 1.5) +
-  scale_x_discrete(labels = c("Healthy", "RA", "PsA", "PsO", "SLE", "SS", "NSS")) +
-  scale_fill_manual(values = col3) +      
-  xlab(NULL) +
-  ylab("Shannon Entropy") +
-  bkg
-
-fpb = paste(dir, filename_box.plot, sep = "")
-pdf(file = fpb, height = 4.5, width = 5)
-plot(p)
-dev.off()
+ggsave(fpb, plot = p, width = 6, height = 6, units = "in", dpi = 300)

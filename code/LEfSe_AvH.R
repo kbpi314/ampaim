@@ -11,19 +11,20 @@ library(ggplot2)
 library(dplyr)
 library(tidyverse)
 library(ggpubr)
+library(RColorBrewer)
 
 # set background theme
 bkg <-
-  theme(axis.text.x = element_text(size = 24, color = "black")) +
-  theme(axis.text.x = element_text(angle=90, vjust = 0.5, hjust = 1)) +
+  theme(axis.text.x = element_text(size = 36, color = "black")) +
+  theme(axis.text.x = element_text(angle=0, vjust = 0.5, hjust = 1)) +
   theme(axis.title.x = element_text(margin = unit(c(0,0,4,0), "mm"))) +
-  theme(axis.title.x = element_text(size = 24, color = "black")) +
-  theme(axis.text.y = element_text(size = 24, color = "black")) +
+  theme(axis.title.x = element_text(size = 36, color = "black", face="bold")) +
+  theme(axis.text.y = element_text(size = 36, color = "black")) +
   theme(axis.title.y = element_text(size = 24, color = "black")) +
   theme(axis.title.y = element_text(margin = unit(c(0,4,0,0), "mm"))) +
   theme(legend.position = "right") +
-  theme(legend.title = element_text(size = 24)) +
-  theme(legend.text = element_text(size = 24)) +
+  theme(legend.title = element_text(size = 36, face="bold")) +
+  theme(legend.text = element_text(size = 36)) +
   theme(legend.key.size = unit(0.6, 'cm')) +
   theme(panel.grid.major = element_blank()) +
   theme(panel.grid.minor = element_blank()) +
@@ -98,13 +99,18 @@ dev.off()
 # subset only on taxa overlapped in all
 plot_data <- subset(plot_data, Taxa=='f__Acidaminococcaceae g__Phascolarctobacterium_A')
 
-pdf("/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs16/lefse_AvH_subset.pdf", width=20, height=3)
+# rename for formatting
+plot_data$Taxa[plot_data$Taxa == "f__Acidaminococcaceae g__Phascolarctobacterium_A"] <- "Phascolarctobacterium A"
+plot_data$Group <- as.character(plot_data$Group)
+plot_data$Group[plot_data$Group == "healthy"] <- "Healthy"
+names(plot_data)[names(plot_data) == "Group"] <- "Diagnosis"
+group.colors <- c(Healthy = colorRampPalette(brewer.pal(9, "Set2"))(ncol)[1])
 
-p <- ggbarplot(plot_data, x="Taxa", y="LDA", fill="Group", width= 1, color = "white", sort.val = "asc", sort.by.groups=TRUE) +  
-  labs(x = "", y = "LDA score", fill="Group") + coord_flip() + 
-  #scale_fill_manual(name="Legend", values = c("Affected", "Healthy')")) +
-  # scale_fill_manual(values=c("#E69F00",'#B3A98C','#605843')) + bkg # flip around as need be
-  # scale_fill_manual(values=c("#B3A98C",'#E69F00','#605843')) + bkg # flip around as need be
+# pdf("/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs16/lefse_AvH_subset.pdf", width=20, height=3)
+pdf("/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs27/lefse_AvH_subset.pdf", width=20, height=3)
+
+p <- ggbarplot(plot_data, x="Taxa", y="LDA", fill="Diagnosis", width= 1, color = "white", sort.val = "asc", sort.by.groups=TRUE) +  
+  labs(x = "", y = "LDA score", fill="Diagnosis") + coord_flip() + 
   scale_fill_manual(values=group.colors) + bkg
 plot(p)
 dev.off()
