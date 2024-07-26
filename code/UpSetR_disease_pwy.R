@@ -1,5 +1,16 @@
 # install library, packages
 library(UpSetR)
+library(RColorBrewer)
+
+# choose colors
+ncol = 7
+col2 <- colorRampPalette(brewer.pal(9, "Set2"))(ncol)[2:7]
+# dx.order = c("Healthy", "RA", "PsA", "PsO", "SLE", "SS", "NSS")
+# col1 <- c("#E99073" "#AB98C8" "#C6B18B" "#E1D83B" "#E9C783" "#B3B3B3")
+# col1 <- c("#B3B3B3", "#E1D83B", "#E9C783", "#C6B18B", "#AB98C8", "#E99073")
+# SS NSS RA SLE reversed
+col1 <- c(col2[4], col2[1], col2[6], col2[5])
+
 
 # example of list input (list of named vectors)
 listInput <- list(
@@ -18,10 +29,12 @@ upset(fromList(listInput),#fromExpression(input),
       order.by = "degree",
       nintersects= NA,
       nsets=20, # 5 is default here
-      #text.scale = c(2.5,2.5,1.25,1.25,2,1), 
-      #sets=c('RA','A','CD','PS'),
+      text.scale = c(3,2.5,1,# c(intersection size title, intersection size tick labels, set size title, 
+                     1.25,2,1),  #set size tick labels, set names, numbers above bars)main.bar.color = "gray23", 
+      sets.bar.color = col1,
       keep.order=T,
       set_size.show=T,
+      mainbar.y.max=15,
       show.numbers=T)
 dev.off()
 

@@ -1,10 +1,10 @@
 ################################# 
 ## R script                    ##
 ## Project: AMP AIM            ##
-## Specific Taxa               ##
+## Metadata                    ##
 ## Data: 16S                   ##
 ## Author: Kevin Bu            ##
-## Date Created: 7/15/24       ##
+## Date Created: 7/24/24       ##
 #################################
 
 ### Load libraries ###
@@ -77,54 +77,67 @@ bkg <- theme_bw() +
 # set working dir
 dir = "/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs27/"
 
-### Alpha Diversity Boxplots ###
-vars = c('Phascolarctobacterium_A', 'shannon_entropy')
-files = c('Phascolarctobacterium_A', 'df_alpha')
-groups = c('Diagnosis', 'Diagnosis')
-orders = list(c("Healthy", "RA", "PsA", "PsO", "SLE", "SS", "NSS"), 
-           c("Healthy", "RA", "PsA", "PsO", "SLE", "SS", "NSS")
-)
+### Metadata barplots ###
+vars = c('BSA', 'CRP', 'ESR', 'DAS28', 'TJC', 'SJC')
+groups = c('Diagnosis', 'Diagnosis' ,'Diagnosis', 'Diagnosis', 'Diagnosis', 'Diagnosis')
+orders = list(c("PsO", "PsA"),
+              c("PsO", "PsA", "RA"),
+              c("PsO", "PsA", "RA"),
+              c("PsO", "PsA", "RA"),
+              c("PsO", "PsA", "RA"),
+              c("PsO", "PsA", "RA"))
 
-for (i in seq(1, length(files))) {
+# choose colors, corresponding to c("Healthy", "RA", "PsA", "PsO", "SLE", "SS", "NSS")
+col1 <- colorRampPalette(brewer.pal(8, "Set2"))(7)
+
+colors = list(c(col1[4],col1[3]),
+              c(col1[4],col1[3],col1[2]),
+              c(col1[4],col1[3],col1[2]),
+              c(col1[4],col1[3],col1[2]),
+              c(col1[4],col1[3],col1[2]),
+              c(col1[4],col1[3],col1[2]))
+
+
+for (i in seq(1, length(vars))) {
   # read data
-  df = read.table(paste0('/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs27/', files[i], '.tsv'), 
+  df = read.table(paste0('/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/inputs/df_meta_', vars[i], '.tsv'), 
                   sep = '\t', header = TRUE, row.names = 1, check.names = FALSE,
                   na.strings = "NA")
-  
-  # choose colors
-  col1 <- colorRampPalette(brewer.pal(8, "Set2"))(length(unique(df[[groups[i]]])))
-  
+
   # get number of groups
   n_groups = length(unique(df[[groups[i]]]))
-
+  
   # create tables for storing wilcoxon and ttest results
   stats.table.all <- matrix(data = NA, nrow = 1, ncol = 3)
-
+  
   # create rows for each variable
   stats.table.all[1,1] <- vars[i]
   
   # check number of groups, if statement
-  # if (n_groups == 2){
-  #  colnames(stats.table.all) <- c("alpha div", "wilcoxon", "ttest")
-  #  stats.table.all[1,2] <- wilcox.test(df[[vars[i]]] ~ df[[groups[i]]], data = df, paired = TRUE)$p.value
-  #  stats.table.all[1,3] <- t.test(df[[vars[i]]] ~ df[[groups[i]]], data = df, paired = TRUE)$p.value
-  #}  else {
-  colnames(stats.table.all) <- c("alpha div", "kruskal wallis", "anova")
-  stats.table.all[1,2] <- kruskal.test(df[[vars[i]]] ~ df[[groups[i]]], data = df)$p.value
-  stats.table.all[1,3] <- oneway.test(df[[vars[i]]] ~ df[[groups[i]]], data = df)$p.value
-  # }
+  if (n_groups == 2){
+    colnames(stats.table.all) <- c("metadata", "wilcoxon", "ttest")
+    stats.table.all[1,2] <- wilcox.test(formula(paste(vars[i],'~',groups[i])), data = df, paired = FALSE, exact=FALSE, correct=TRUE)$p.value
+    stats.table.all[1,3] <- t.test(formula(paste(vars[i],'~',groups[i])), data = df, paired = FALSE)$p.value
+  }  else {
+    colnames(stats.table.all) <- c("metadata", "kruskal wallis", "anova")
+    stats.table.all[1,2] <- kruskal.test(df[[vars[i]]] ~ df[[groups[i]]], data = df)$p.value
+    stats.table.all[1,3] <- oneway.test(df[[vars[i]]] ~ df[[groups[i]]], data = df)$p.value
+  }
   
   # save
-  ft.all = paste0(dir, files[i], "_stats.csv")
+  ft.all = paste0(dir, vars[i], "_stats.csv")
   write.csv(file = ft.all, stats.table.all)
-
+  
   ### bar plot ###
   
   # create filenames
-  filename_box.plot = paste0(files[i], "_box.plot.pdf")
+  filename_box.plot = paste0(vars[i], "_box.plot.pdf")
   
   # rewrite order of factors
   df[[groups[i]]] <- factor(df[[groups[i]]], levels = orders[[i]])
+  
+  # get colors
+  col1 <- colors[[i]]
   
   # create plot
   p <- ggplot(df, aes_string(x = groups[i], y = vars[i], fill = groups[i])) +

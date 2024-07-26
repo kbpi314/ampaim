@@ -14,6 +14,7 @@ library(RColorBrewer)
 # choose colors
 ncol = 7
 col2 <- colorRampPalette(brewer.pal(9, "Set2"))(ncol)[2:7]
+# dx.order = c("Healthy", "RA", "PsA", "PsO", "SLE", "SS", "NSS")
 #col1 <- c("#E99073" "#AB98C8" "#C6B18B" "#E1D83B" "#E9C783" "#B3B3B3")
 #col1 <- c("#B3B3B3", "#E1D83B", "#E9C783", "#C6B18B", "#AB98C8", "#E99073")
 col1 <- c(col2[6], col2[4], col2[5], col2[3], col2[2], col2[1])
