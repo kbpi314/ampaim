@@ -83,7 +83,8 @@ for (j in seq_along(dists)) {
   # plot beta diversity
   p <- ggplot() + # data=df, aes(x = PC1, y = PC2, fill = Diagnosis)) +
     geom_point(data = df, aes(x = PC1, y = PC2, color = Diagnosis),size=4) +
-    scale_color_manual(values = col1) +
+    scale_color_manual(values = col1,
+                       labels = c('Healthy', 'RA *', 'PsA *', 'PsO *', 'SLE (n.s.)', 'SS (n.s.)', 'NSS (n.s.)')) +
     bkg +
     scale_x_continuous(labels = f.dec) + # 2 decimal places on x-axis
     scale_y_continuous(labels = f.dec)   # 2 decimal places on y-axis

@@ -37,21 +37,26 @@ bkg <- theme_bw() +
 dir = "/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs27/"
 
 ### Metadata barplots ###
-vars1 = c('Phascolarctobacterium_A', 'Phascolarctobacterium_A', 'Prevotella_copri', 'Prevotella_copri')
-vars2 = c('CRP', 'ESR', 'SJC', 'TJC')
-groups = c('Diagnosis', 'Diagnosis', 'Diagnosis', 'Diagnosis')
+vars1 = c('Phascolarctobacterium_A', 'Phascolarctobacterium_A', 'Prevotella_copri', 'Prevotella_copri',
+          'Phascolarctobacterium_A', 'Phascolarctobacterium_A', 'Phascolarctobacterium_A', 'Phascolarctobacterium_A', 'Phascolarctobacterium_A')
+vars2 = c('CRP', 'ESR', 'SJC', 'TJC',
+          'CRP', 'CRP', 'CRP', 'CRP', 'CRP')
+groups = c('Diagnosis', 'Diagnosis', 'Diagnosis', 'Diagnosis',
+           'Diagnosis', 'Diagnosis', 'Diagnosis', 'Diagnosis', 'Diagnosis')
 subsample = list(c("PsA"),
                  c("PsA"),
                  c("PsA","RA"),
-                 c("PsA","RA"))
-  
+                 c("PsA","RA"),
+                 c("RA"),c("PsO"),c("SLE"),c("NSS"),c("SS"))
+tags = c('phasA_PsA','x', 'x', 'x', 'phasA_RA', 'phasA_PsO', 'phasA_SLE', 'phasA_NSS', 'phasA_SS')
 # choose colors, corresponding to c("Healthy", "RA", "PsA", "PsO", "SLE", "SS", "NSS")
 col1 <- colorRampPalette(brewer.pal(8, "Set2"))(7)
 colors = list(c("PsA" = col1[3]),
               c("PsA" = col1[3]),
               c("PsA" = col1[3], "RA" = col1[2]),
-              c("PsA" = col1[3], "RA" = col1[2]))
-color_map = c("PsA" = col1[3], "RA" = col1[2])
+              c("PsA" = col1[3], "RA" = col1[2]),
+              c("RA" = col1[1]), c("PsO" = col1[4]), c("SLE" = col1[5]), c("NSS" = col1[7]), c("SS" = col1[6]))
+color_map = c("PsA" = col1[3], "RA" = col1[2], "PsO" = col1[4], "SLE" = col1[5], "SS" = col1[6], "NSS" = col1[7])
 
 for (i in seq(1, length(vars1))) {
   # read data
@@ -61,7 +66,7 @@ for (i in seq(1, length(vars1))) {
   df <- df[df$Diagnosis %in% subsample[[i]], ]
 
   # create filenames
-  filename_box.plot = paste0(vars1[i],'_',vars2[i], "_scatter.plot.pdf")
+  filename_box.plot = paste0(tags[i], '_', vars1[i],'_',vars2[i], "_scatter.plot.pdf")
   
   # create plot
   p <- ggplot(df, aes_string(x = vars1[i], y = vars2[i], fill = groups[[i]])) +
@@ -69,6 +74,7 @@ for (i in seq(1, length(vars1))) {
     bkg + 
     scale_fill_manual(values = color_map) + 
     # theme(legend.position = "none") + 
+    geom_smooth(method = "lm", se = FALSE, color = "black") +
     labs(x = gsub("_", " ", vars1[i]), y = gsub("_", " ", vars2[i]))
 
   fpb = paste(dir, filename_box.plot, sep = "")

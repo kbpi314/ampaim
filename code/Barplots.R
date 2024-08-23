@@ -78,10 +78,11 @@ bkg <- theme_bw() +
 dir = "/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs27/"
 
 ### Alpha Diversity Boxplots ###
-vars = c('Phascolarctobacterium_A', 'shannon_entropy')
-files = c('Phascolarctobacterium_A', 'df_alpha')
-groups = c('Diagnosis', 'Diagnosis')
+vars = c('Phascolarctobacterium_A', 'Coprobacter', 'shannon_entropy')
+files = c('Phascolarctobacterium_A', 'Coprobacter', 'df_alpha')
+groups = c('Diagnosis', 'Diagnosis', 'Diagnosis')
 orders = list(c("Healthy", "RA", "PsA", "PsO", "SLE", "SS", "NSS"), 
+              c("Healthy", "RA", "PsA", "PsO", "SLE", "SS", "NSS"), 
            c("Healthy", "RA", "PsA", "PsO", "SLE", "SS", "NSS")
 )
 
