@@ -38,24 +38,34 @@ dir = "/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs27/"
 
 ### Metadata barplots ###
 vars1 = c('Phascolarctobacterium_A', 'Phascolarctobacterium_A', 'Prevotella_copri', 'Prevotella_copri',
-          'Phascolarctobacterium_A', 'Phascolarctobacterium_A', 'Phascolarctobacterium_A', 'Phascolarctobacterium_A', 'Phascolarctobacterium_A')
+          'Phascolarctobacterium_A', 'Phascolarctobacterium_A', 'Phascolarctobacterium_A', 'Phascolarctobacterium_A', 'Phascolarctobacterium_A',
+          'Phascolarctobacterium_A')
 vars2 = c('CRP', 'ESR', 'SJC', 'TJC',
-          'CRP', 'CRP', 'CRP', 'CRP', 'CRP')
+          'CRP', 'CRP', 'CRP', 'CRP', 'CRP',
+          'CRP')
 groups = c('Diagnosis', 'Diagnosis', 'Diagnosis', 'Diagnosis',
-           'Diagnosis', 'Diagnosis', 'Diagnosis', 'Diagnosis', 'Diagnosis')
+           'Diagnosis', 'Diagnosis', 'Diagnosis', 'Diagnosis', 'Diagnosis',
+           'Diagnosis')
 subsample = list(c("PsA"),
                  c("PsA"),
                  c("PsA","RA"),
                  c("PsA","RA"),
-                 c("RA"),c("PsO"),c("SLE"),c("NSS"),c("SS"))
-tags = c('phasA_PsA','x', 'x', 'x', 'phasA_RA', 'phasA_PsO', 'phasA_SLE', 'phasA_NSS', 'phasA_SS')
+                 c("RA"),c("PsO"),c("SLE"),c("NSS"),c("SS"),
+                 c("RA","PsO","PsA"))
+tags = c('phasA_PsA','x', 'x', 'x', 'phasA_RA', 'phasA_PsO', 'phasA_SLE', 'phasA_NSS', 'phasA_SS',
+         'phasA_RPP')
 # choose colors, corresponding to c("Healthy", "RA", "PsA", "PsO", "SLE", "SS", "NSS")
 col1 <- colorRampPalette(brewer.pal(8, "Set2"))(7)
+col1 <- colorRampPalette(brewer.pal(9, "Paired"))(7)
+# "black"   "#4F9AA6" "#5DB54B" "#FB9A99" "#EB5037" "#FE9425" "#CAB2D6"
+col1[1] <- "white"
+
 colors = list(c("PsA" = col1[3]),
               c("PsA" = col1[3]),
               c("PsA" = col1[3], "RA" = col1[2]),
               c("PsA" = col1[3], "RA" = col1[2]),
-              c("RA" = col1[1]), c("PsO" = col1[4]), c("SLE" = col1[5]), c("NSS" = col1[7]), c("SS" = col1[6]))
+              c("RA" = col1[1]), c("PsO" = col1[4]), c("SLE" = col1[5]), c("NSS" = col1[7]), c("SS" = col1[6]),
+              c("PsA" = col1[3], "RA" = col1[2], "PsO" = col1[4]))
 color_map = c("PsA" = col1[3], "RA" = col1[2], "PsO" = col1[4], "SLE" = col1[5], "SS" = col1[6], "NSS" = col1[7])
 
 for (i in seq(1, length(vars1))) {
@@ -64,17 +74,19 @@ for (i in seq(1, length(vars1))) {
                   sep = ',', header = TRUE, row.names = 1, check.names = FALSE,
                   na.strings = "NA")
   df <- df[df$Diagnosis %in% subsample[[i]], ]
+  df <- df[complete.cases(df[ , c(1,6)]),]
 
   # create filenames
   filename_box.plot = paste0(tags[i], '_', vars1[i],'_',vars2[i], "_scatter.plot.pdf")
   
   # create plot
   p <- ggplot(df, aes_string(x = vars1[i], y = vars2[i], fill = groups[[i]])) +
-    geom_point(pch=21, size=4) +
+    geom_point(pch=21, size=3) +
     bkg + 
     scale_fill_manual(values = color_map) + 
     # theme(legend.position = "none") + 
-    geom_smooth(method = "lm", se = FALSE, color = "black") +
+    geom_smooth(method = "lm", se = FALSE, aes(color=Diagnosis,  fill=Diagnosis)) +
+    scale_color_manual(values = color_map) + 
     labs(x = gsub("_", " ", vars1[i]), y = gsub("_", " ", vars2[i]))
 
   fpb = paste(dir, filename_box.plot, sep = "")

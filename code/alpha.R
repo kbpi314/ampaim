@@ -126,6 +126,9 @@ bkg <- theme_bw() +
 # choose colors
 col1 <- colorRampPalette(brewer.pal(9, "Spectral"))(length(unique(d.final$Diagnosis)))
 col1 <- colorRampPalette(brewer.pal(9, "Set2"))(length(unique(df$Diagnosis)))
+col1 <- colorRampPalette(brewer.pal(9, "Paired"))(length(unique(df$Diagnosis)))
+# "black"   "#4F9AA6" "#5DB54B" "#FB9A99" "#EB5037" "#FE9425" "#CAB2D6"
+col1[1] <- "white"
 
 # variable of interest
 a <- 'shannon_entropy'
