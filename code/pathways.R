@@ -198,6 +198,8 @@ bkg <- theme_bw() +
 # choose colors
 col1 <- colorRampPalette(brewer.pal(9, "Spectral"))(length(unique(d.final$Diagnosis)))
 col1 <- colorRampPalette(brewer.pal(9, "Set2"))(length(unique(d.final$Diagnosis)))
+col1 <- colorRampPalette(brewer.pal(9, "Paired"))(ncol)
+col1[1] <- 'black'
 
 # variable of interest
 a <- 'Mannose_TypeO_glycan_Biosynthesis'

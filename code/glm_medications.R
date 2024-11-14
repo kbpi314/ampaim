@@ -94,8 +94,8 @@ add_significance <- function(p_value) {
 ### glm ###
 df = read.delim('/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/inputs/df_med.tsv', sep = '\t')
 
-out <- glm(shannon_entropy ~ HCQ + MTX, data = df, family = gaussian)
-out <- glm(shannon_entropy ~ Medication, data = df, family = gaussian)
+# out <- glm(shannon_entropy ~ HCQ + MTX, data = df, family = gaussian)
+out <- glm(shannon_entropy ~ Medication_Status, data = df, family = gaussian)
 
 summary(out)
 
@@ -142,16 +142,19 @@ bkg <- theme_bw() +
 dir = "/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs27/"
 
 # colors
-col1 <- c("#929aab", "#ce2525")
+col1 <- c("#ce2525","#929aab")
+col1 <- c("#B3A98C", "#E69F00")
+col1 <- c("blue","#ADD8E6")
+
 
 # plot boxplot
-p <- ggplot(data = df, aes(x = Medication, y = shannon_entropy, fill = Medication)) +
+p <- ggplot(data = df, aes(x = Medication_Status, y = shannon_entropy, fill = Medication_Status)) +
   stat_summary(fun.data = stats.whiskers, geom = "errorbar", 
                color = "black", size = 0.8, width = 0.3) +
   stat_summary(fun.data = stats.boxplot, geom = "crossbar", 
                color = "black", size = 0.5, width = 0.5) +
   geom_jitter(width = 0.1, size = 1.5) +
-  scale_x_discrete(labels = c("No Medication", "On Medication")) +
+  scale_x_discrete(labels = c("On Medication", "No Medication")) +
   scale_fill_manual(values = col1) +      
   xlab(NULL) +
   ylab('Shannon Entropy') +

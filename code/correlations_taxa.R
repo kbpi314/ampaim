@@ -21,7 +21,7 @@ library(RColorBrewer)
 
 # background theme
 bkg <- theme_bw() +
-  theme(axis.text.x = element_text(size = 18, color = "black")) +
+  theme(axis.text.x = element_text(size = 12, color = "black")) +
   theme(axis.text.y = element_text(size = 18))+
   theme(axis.title.x = element_text(size = 24, color = "black", face = "bold")) +
   theme(axis.title.y = element_text(size = 24, color = "black", face = "bold")) +
@@ -39,21 +39,21 @@ dir = "/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs27/"
 ### Metadata barplots ###
 vars1 = c('Phascolarctobacterium_A', 'Phascolarctobacterium_A', 'Prevotella_copri', 'Prevotella_copri',
           'Phascolarctobacterium_A', 'Phascolarctobacterium_A', 'Phascolarctobacterium_A', 'Phascolarctobacterium_A', 'Phascolarctobacterium_A',
-          'Phascolarctobacterium_A')
+          'Phascolarctobacterium_A', 'Phascolarctobacterium_A')
 vars2 = c('CRP', 'ESR', 'SJC', 'TJC',
           'CRP', 'CRP', 'CRP', 'CRP', 'CRP',
-          'CRP')
+          'CRP', 'CRP')
 groups = c('Diagnosis', 'Diagnosis', 'Diagnosis', 'Diagnosis',
            'Diagnosis', 'Diagnosis', 'Diagnosis', 'Diagnosis', 'Diagnosis',
-           'Diagnosis')
+           'Diagnosis', 'Diagnosis')
 subsample = list(c("PsA"),
                  c("PsA"),
                  c("PsA","RA"),
                  c("PsA","RA"),
-                 c("RA"),c("PsO"),c("SLE"),c("NSS"),c("SS"),
-                 c("RA","PsO","PsA"))
-tags = c('phasA_PsA','x', 'x', 'x', 'phasA_RA', 'phasA_PsO', 'phasA_SLE', 'phasA_NSS', 'phasA_SS',
-         'phasA_RPP')
+                 c("RA"),c("PsO"),c("SLE"),c("NSS"),c("SjD"),
+                 c("RA","PsO","PsA"), c("PsO"))
+tags = c('phasA_PsA','x', 'x', 'x', 'phasA_RA', 'phasA_PsO', 'phasA_SLE', 'phasA_NSS', 'phasA_SjD',
+         'phasA_RPP','phasA_PsO')
 # choose colors, corresponding to c("Healthy", "RA", "PsA", "PsO", "SLE", "SS", "NSS")
 col1 <- colorRampPalette(brewer.pal(8, "Set2"))(7)
 col1 <- colorRampPalette(brewer.pal(9, "Paired"))(7)
@@ -64,13 +64,14 @@ colors = list(c("PsA" = col1[3]),
               c("PsA" = col1[3]),
               c("PsA" = col1[3], "RA" = col1[2]),
               c("PsA" = col1[3], "RA" = col1[2]),
-              c("RA" = col1[1]), c("PsO" = col1[4]), c("SLE" = col1[5]), c("NSS" = col1[7]), c("SS" = col1[6]),
-              c("PsA" = col1[3], "RA" = col1[2], "PsO" = col1[4]))
-color_map = c("PsA" = col1[3], "RA" = col1[2], "PsO" = col1[4], "SLE" = col1[5], "SS" = col1[6], "NSS" = col1[7])
+              c("RA" = col1[1]), c("PsO" = col1[4]), c("SLE" = col1[5]), c("NSS" = col1[7]), c("SjD" = col1[6]),
+              c("PsA" = col1[3], "RA" = col1[2], "PsO" = col1[4]),
+              c("PsA" = col1[4]))
+color_map = c("PsA" = col1[3], "RA" = col1[2], "PsO" = col1[4], "SLE" = col1[5], "SjD" = col1[6], "NSS" = col1[7])
 
 for (i in seq(1, length(vars1))) {
   # read data
-  df = read.table(paste0('/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/inputs/df_otu_meta.csv'), 
+  df = read.table(paste0('/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/inputs/df_otu_meta_logt.csv'), 
                   sep = ',', header = TRUE, row.names = 1, check.names = FALSE,
                   na.strings = "NA")
   df <- df[df$Diagnosis %in% subsample[[i]], ]

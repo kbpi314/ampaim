@@ -19,7 +19,7 @@ library(Cairo)
 
 # Load OTU table
 base.path <- "/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/"
-viz.path <- paste(base.path, 'outputs/jobs19/', sep="")
+viz.path <- paste(base.path, 'outputs/jobs27/', sep="")
 df <- read.csv(paste(base.path, 'inputs/Qiime2_0_KB_batch_correct_nocd/counts_L6.csv', sep=""))#, sep='\t')
 
 rownames(df) <- df[,1]

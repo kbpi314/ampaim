@@ -89,6 +89,9 @@ orders = list(c("PsO", "PsA"),
 
 # choose colors, corresponding to c("Healthy", "RA", "PsA", "PsO", "SLE", "SS", "NSS")
 col1 <- colorRampPalette(brewer.pal(8, "Set2"))(7)
+col2 <- colorRampPalette(brewer.pal(9, "Paired"))(ncol)
+col1 <- c(col2[2], col2[3], col2[1], col2[5], col2[6], col2[4])
+
 
 colors = list(c(col1[4],col1[3]),
               c(col1[4],col1[3],col1[2]),

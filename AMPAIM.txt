@@ -56,9 +56,13 @@ inputs/
 outputs/
 	jobs00              # validation of eiser; LEfSe of axial v periperhal at L7
 	jobs01							# pan RA PsA phenotype as well as each individually, metadata correlations
-	jobs02 							# CUTIE jobs of all subsets 
+	jobs02 							# CUTIE jobs of all subsets at L6 and L7
 	jobs03							# DMM
 	jobs04							# UpSetR
+	jobs05              # CUTIE jobs with FDR at L6 and L7
+	jobs06							# PICRUST2 output 
+	jobs07							# CUTIE picrust2 L6 and L7
+	jobs08							# pairwise jobs (alpha, beta, LEfSe): starting with NSS SS
 
 
 	jobs09							# reran with batch correction; lefse for merged batch 138 + 141 RA
@@ -71,6 +75,8 @@ outputs/
 	jobs16							# '' AvH
 
 	jobs19-26; same for species
+	jobs27							# nicer figures for paper in R
+	jobs28							# SparCC
 
 
 	CDP_MSQ141_batch_correct_GG1
@@ -183,6 +189,108 @@ mkdir /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Q2_MSQ138_141_noctrl_noei
 cp /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Qiime2_0_KB_batch_correct_nocd/otu_table_del1_batch_correct.qza /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Q2_MSQ138_141_noctrl_noeiser_nocd_correct/
 cp /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Qiime2_0_KB_batch_correct_nocd/qiime_mapping_file_batch_nocd.tsv /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Q2_MSQ138_141_noctrl_noeiser_nocd_correct/
 
+
+
+
+
+
+###
+# SparCC 
+###
+
+
+# Navigate to repo location (odd)
+cd /sc/arion/projects/clemej05a/kevin/Repositories/SparCC
+
+# create env if not already
+# git clone 
+# then run sparcc.lsf 
+# env is called SparCC-env per environment.yml
+
+# activate env
+source activate SparCC-env
+
+# create .yml config
+# editing to use two-sided pvals
+cp twinsra_test.yml ampaim_test.yml
+sed -i 's/twinsra/ampaim/g' ampaim_test.yml
+
+# set up directory
+SparCC/
+	ampaim_test/ # taxa table here should be in traditional untidy format with 'abs' counts
+		taxa_table_L6.tsv
+
+# convert /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Qiime2_0_KB_batch_correct_nocd/taxa_collapsed_table_L6.qza
+# from qza to biom to tsv (unzip then convert)
+# activate Q2 env
+biom convert -i /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Qiime2_0_KB_batch_correct_nocd/8486a47b-09e8-4594-8daa-e6b73e1c7a9b/data/feature-table.biom -o /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Qiime2_0_KB_batch_correct_nocd/8486a47b-09e8-4594-8daa-e6b73e1c7a9b/data/taxa_table_L6.tsv --to-tsv
+
+# cp to ampaim_test
+# delete first row
+sed -i 1d taxa_table_L6.tsv
+# change #OTU ID to SampleID without spaces just in case
+# run this after copying twinsra_test.yml to configuration.yml
+python General_Execution.py 
+
+# mkdir pvals
+# be sure to rename to .txt!!!
+# delete first col, no spaces
+
+
+# export for cytoscape; copy to ampaim dir
+# feature table came from here /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Qiime2_0_KB_batch_correct_nocd/8486a47b-09e8-4594-8daa-e6b73e1c7a9b/data/feature-table.biom
+
+
+source activate /sc/arion/projects/MMEDS/.modules/qiime2-2023.9;
+# SPATH=/sc/arion/projects/clemej05a/kevin/Repositories/SparCC/ampaim
+# SPATH=/sc/arion/projects/clemej05a/kevin/Repositories/SparCC/ampaim_healthy
+# SPATH=/sc/arion/projects/clemej05a/kevin/Repositories/SparCC/ampaim_disease
+# SPATH=/sc/arion/projects/clemej05a/kevin/Repositories/SparCC/ampaim_disease0
+# SPATH=/sc/arion/projects/clemej05a/kevin/Repositories/SparCC/ampaim_disease1
+SPATH=/sc/arion/projects/clemej05a/kevin/Repositories/SparCC/ampaim_disease2
+
+
+sed 's/,/\t/g' $SPATH/cor_sparcc.csv > $SPATH/cor_sparcc.tsv
+sed 's/,/\t/g' $SPATH/pvals/pvals_two_sided.csv > $SPATH/pvals/pvals_two_sided.tsv
+
+python /sc/arion/projects/clemej05a/kevin/scripts/sparcc2network2.0.py -c $SPATH/cor_sparcc.tsv -p $SPATH/pvals/pvals_two_sided.tsv -b $SPATH/taxa_table_L6.txt -o $SPATH/ampaim_cytoscape_5e2.txt -t 0.05
+
+# when importing to cytoscape
+# there are node, edge, and network tables (the latter links the former 2)
+# make sure the 'key' is selected for the column when importing to node table
+
+
+# sparcc on separate disease-only and healthy-only networks
+# you can only run one at a time...
+
+
+
+
+
+
+
+
+
+# stacked taxa barplot
+# need a few qza
+# asv table
+/sc/arion/projects/clemej05a/kevin/ampaim/inputs/Q2_MSQ138_141_noctrl_noeiser_nocd_correct/taxa_collapsed_table_L6.qza
+
+# taxonomy
+/sc/arion/projects/clemej05a/kevin/ampaim/inputs/Q2_MSQ138_141_noctrl_noeiser_nocd_correct/taxonomy.qza
+
+# taxa sums by group
+# TO BE CREATED
+
+# mapping file
+/sc/arion/projects/clemej05a/kevin/ampaim/inputs/Q2_MSQ138_141_noctrl_noeiser_nocd_correct/qiime_mapping_file_batch_nocd.tsv
+
+sp_taxasums = read.csv(file='/Users/KevinBu/Desktop/clemente_lab/Projects/twinsra/inputs/df_q2R.tsv', 
+                         sep='\t',
+                         row.names='Species')
+
+
+
 ###
 # CUTIE on metadata
 ###
@@ -204,6 +312,120 @@ cp cutie_${i}_psa.lsf cutie_${i}_${j}.lsf;
 sed -i '' "s/psa/$j/g" cutie_${i}_${j}.lsf;
 done;
 done;
+
+
+# now we need fdr
+# so we take the L7 files and copy them and also add 10 to the job #
+
+https://askubuntu.com/questions/365877/copy-only-folders-not-files
+
+# creative usage 
+find -type d -links 2 -exec mkdir -p "/sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs05/{}" \;
+
+for i in cutie*L7*.lsf;
+do 
+cp $i FDR_$i;
+sed -i 's/cutie_L7/FDR_cutie_L7/g' FDR_$i 
+done
+
+for i in cutie*L7*.ini;
+do 
+cp $i FDR_$i; 
+sed -i 's/jobs02/jobs05/g' FDR_$i; 
+sed -i 's/nomc/fdr/g' FDR_$i
+done
+
+
+
+###
+# PICRUST2 in jobs06
+###
+
+# original script
+/sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_Puerto_Rico_Nitric_Oxide_Reload_0/PiCRUSt2_1/jobfile_0.lsf
+
+# copied to picrust2.lsf
+# requires mmeds cologin
+# work on the KOs with JL
+
+python /sc/arion/projects/clemej05a/jakleen/humann/brite/map_ko_kegg_v3.py -i /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs06/picrust2_out/KO_metagenome_out/pred_metagenome_unstrat.tsv -m /sc/arion/projects/clemej05a/jakleen/humann/brite/ko_map_kegg_20240328.txt -o /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs06/picrust2_out/KO_metagenome_out/pred_metagenome_unstrat_kegg.tsv
+
+
+
+
+
+
+### 
+# jobs08; pairwise analyses
+###
+
+# make sub directory
+mkdir /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs08/nss_ss
+
+# copy the job file
+cp /sc/arion/projects/clemej05a/kevin/ampaim/jobs/MSQ138_141_psa.lsf /sc/arion/projects/clemej05a/kevin/ampaim/jobs/MSQ138_141_nss_ss.lsf
+
+# copy the otu table
+cp /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Qiime2_0_KB_batch_correct_nocd/otu_table_del1_batch_correct.qza /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs08/nss_ss/
+
+# copy rep seqs
+cp /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Qiime2_0_KB_batch_correct_nocd/rep_seqs_table.qza /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs08/nss_ss/
+
+# change the following paths
+# RUN_Qiime2_KB=/sc/arion/projects/clemej05a/kevin/ampaim/inputs/Q2_MSQ138_141_psa;
+# RUN_Qiime2=/sc/arion/projects/clemej05a/kevin/ampaim/inputs/Q2_MSQ138_141_psa;
+RUN_Qiime2_KB=/sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs08/nss_ss;
+RUN_Qiime2=/sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs08/nss_ss;
+
+# change the mapping file
+# qiime_mapping_file_merge_meds_psaonly.tsv
+Q2_map=/sc/arion/projects/clemej05a/kevin/ampaim/inputs/qiime_mapping_file_merge_nss_ss.tsv
+
+
+# create lefse subfolder
+mkdir /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs08/nss_ss/lefse
+
+# copy over taxa collapsed table
+cp /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs08/nss_ss/taxa_collapsed_table_L6.qza /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs08/nss_ss/lefse/
+
+# copy over mapping file
+cp /sc/arion/projects/clemej05a/kevin/ampaim/inputs/qiime_mapping_file_merge_nss_ss.tsv /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs08/nss_ss/
+cp /sc/arion/projects/clemej05a/kevin/ampaim/inputs/qiime_mapping_file_merge_nss_ss.tsv /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs08/nss_ss/lefse/
+
+
+# filter table
+PYTHONPATH=/hpc/packages/minerva-centos7/anaconda3/2020.8/pkgs;
+export LC_ALL=en_US.UTF-8;
+ml anaconda3;
+# source activate qiime2-2020.8.0;
+source activate /sc/arion/projects/MMEDS/.modules/qiime2-2023.9;
+
+# grab L7_AvH from old jobs18
+qiime feature-table filter-samples \
+--i-table /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs08/nss_ss/taxa_collapsed_table_L6.qza   \
+--m-metadata-file /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs08/nss_ss/lefse/qiime_mapping_file_merge_nss_ss.tsv \
+--p-where '[Diagnosis] IN ("non-sjogrens sicca","ss")' \
+--o-filtered-table /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs08/nss_ss/lefse/L6_nss_ss.qza
+
+# chmod 777 the jobs file and everything in it
+chmod 777 /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs08/nss_ss/lefse/
+chmod 777 /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs08/nss_ss/lefse/*
+
+# change the lefse job file with the correct mapping file
+cp /sc/arion/projects/clemej05a/kevin/ampaim/jobs/lefse_psa_AvP_L7_138141.lsf /sc/arion/projects/clemej05a/kevin/ampaim/jobs/lefse_nss_ss_L6_138141.lsf 
+
+sed -i 's/qiime_mapping_file_merge_meds_psaonly/qiime_mapping_file_merge_nss_ss/g' /sc/arion/projects/clemej05a/kevin/ampaim/jobs/lefse_nss_ss_L6_138141.lsf 
+
+# change the RUN_Lefse path
+RUN_Lefse=/sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs08/nss_ss/lefse/
+
+# might have to edit inside the lefse job file to use the new env that's gg2 compatible?
+
+# in a separate tab
+/opt/collab/bin/cologin mmedsadmin
+cd /sc/arion/projects/clemej05a/kevin/ampaim/jobs/
+bsub < lefse_nss_ss_L6_138141.lsf
+
 
 
 

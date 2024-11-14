@@ -72,23 +72,27 @@ df <- read.delim(file="/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outpu
 # choose colors
 col1 <- colorRampPalette(brewer.pal(9, "Set2"))(length(unique(df$Diagnosis)))
 col1 <- colorRampPalette(brewer.pal(9, "Paired"))(length(unique(df$Diagnosis)))
-# "black"   "#4F9AA6" "#5DB54B" "#FB9A99" "#EB5037" "#FE9425" "#CAB2D6"
-col1[1] <- "black"
+#           "black"   "#4F9AA6" "#5DB54B" "#FB9A99" "#EB5037" "#FE9425" "#CAB2D6"
+# dx.order = c("Healthy", "RA", "PsA", "PsO", "SLE", "SjD", "NSS")
 
+col1[1] <- "black"
+col1 <- c("#ADD8E6", "blue")
+# healthy = "#B3A98C", RA = "#E69F00")
 # order factors for legend
-dx.order = c("Healthy", "RA", "PsA", "PsO", "SLE", "SjD", "NSS")
-df$Diagnosis <- factor(df$Diagnosis, levels=dx.order)
+med.order = c("NoMed", "Med")
+
+df$Medication_Status <- factor(df$Medication_Status, levels=med.order)
 
 for (j in seq_along(dists)) {
   # create filenames
-  filename_plot = paste("bdiv", dists[j], "plot.pdf", sep = "_")
+  filename_plot = paste("bdiv", dists[j], "_medication_plot.pdf", sep = "_")
   
   # plot beta diversity
   p <- ggplot() + # data=df, aes(x = PC1, y = PC2, fill = Diagnosis)) +
-    geom_point(data = df, aes(x = PC1, y = PC2, color = Diagnosis),size=4) +
+    geom_point(data = df, aes(x = PC1, y = PC2, color = Medication_Status),size=4) +
     scale_color_manual(values = col1,
-                       labels = c('Healthy', 'RA *', 'PsA *', 'PsO *', 'SLE (n.s.)', 'SjD (n.s.)', 'NSS (n.s.)')) +
-    bkg +
+                       labels = c('NoMed','Med')) + #, 'RA *', 'PsA *', 'PsO *', 'SLE (n.s.)', 'SjD (n.s.)', 'NSS (n.s.)')) +
+    bkg + theme(legend.title=element_blank()) + 
     scale_x_continuous(labels = f.dec) + # 2 decimal places on x-axis
     scale_y_continuous(labels = f.dec)   # 2 decimal places on y-axis
   

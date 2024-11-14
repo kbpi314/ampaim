@@ -42,7 +42,7 @@ taxasums <- summarize_taxa(table, taxonomy)
 p <- taxa_barplot(table, metadata, ntoplot=30) +
   ylab("Relative abundance (%)") + scale_fill_manual(values = col1) + bkg
 print(p)
-ggsave("/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs27/taxa_barplot.png", height=2200, width=5000, units = 'px') 
+ggsave("/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs27/taxa_barplot.pdf", height=6, width=8, units = 'in') 
 
 
 taxa_barplot<-function(features, metadata, category, normalize, ntoplot, sort_by="none"){

@@ -50,15 +50,15 @@ bkg <-
 # PsOvH
 #data <-read.table("/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs10/lefse_results.res", header = FALSE, sep = "\t")
 # PsAvH
-#data <-read.table("/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs11/lefse_results.res", header = FALSE, sep = "\t")
+# data <-read.table("/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs11/lefse_results.res", header = FALSE, sep = "\t")
 # SSvH
 # data <-read.table("/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs12/lefse_results.res", header = FALSE, sep = "\t")
 # SLEvH
-#data <-read.table("/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs13/lefse_results.res", header = FALSE, sep = "\t")
+data <-read.table("/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs13/lefse_results.res", header = FALSE, sep = "\t")
 # SICCAvH
-#data <-read.table("/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs14/lefse_results.res", header = FALSE, sep = "\t")
+# data <-read.table("/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs14/lefse_results.res", header = FALSE, sep = "\t")
 # AvH
-data <-read.table("/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs16/lefse_results.res", header = FALSE, sep = "\t")
+# data <-read.table("/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs16/lefse_results.res", header = FALSE, sep = "\t")
 
 
 # L7
@@ -107,14 +107,14 @@ plot_data$Taxa <- as.character(taxa_strs)
 plot_data[plot_data$Group == "Control",]$LDA <- -1 * plot_data[plot_data$Group == "Control",]$LDA
 
 # set colors and factors
-group.colors <- c(healthy = "#B3A98C", affected = "#E69F00")
-plot_data$Group <- factor(plot_data$Group, levels = c('healthy', 'affected'))
+# group.colors <- c(healthy = "#B3A98C", affected = "#E69F00")
+# plot_data$Group <- factor(plot_data$Group, levels = c('healthy', 'affected'))
 
 #group.colors <- c(healthy = "#B3A98C", RA = "#E69F00")
 #plot_data$Group <- factor(plot_data$Group, levels = c('healthy', 'RA'))
 
-#group.colors <- c(healthy = "#B3A98C", psa = "#E69F00")
-#plot_data$Group <- factor(plot_data$Group, levels = c('healthy', 'psa'))
+# group.colors <- c(healthy = "#B3A98C", psa = "#E69F00")
+# plot_data$Group <- factor(plot_data$Group, levels = c('healthy', 'psa'))
 
 #group.colors <- c(healthy = "#B3A98C", pso = "#E69F00")
 # plot_data$Group <- factor(plot_data$Group, levels = c('healthy', 'pso'))
@@ -122,14 +122,14 @@ plot_data$Group <- factor(plot_data$Group, levels = c('healthy', 'affected'))
 #group.colors <- c(healthy = "#B3A98C", ss = "#E69F00")
 #plot_data$Group <- factor(plot_data$Group, levels = c('healthy', 'ss'))
 
-#group.colors <- c(healthy = "#B3A98C", sle = "#E69F00")
-#plot_data$Group <- factor(plot_data$Group, levels = c('healthy', 'sle'))
+group.colors <- c(healthy = "#B3A98C", sle = "#E69F00")
+plot_data$Group <- factor(plot_data$Group, levels = c('healthy', 'sle'))
 
-#group.colors <- c(healthy = "#B3A98C", 'non-sjogrens sicca' = "#E69F00") 
-#plot_data$Group <- factor(plot_data$Group, levels = c('healthy', 'non-sjogrens sicca'))
+# group.colors <- c(healthy = "#B3A98C", 'nss' = "#E69F00") 
+# plot_data$Group <- factor(plot_data$Group, levels = c('healthy', 'nss'))
 
-#group.colors <- c('non-sjogrens sicca' = "#B3A98C", 'ss' = "#E69F00")
-#plot_data$Group <- factor(plot_data$Group, levels = c('non-sjogrens sicca', 'ss'))
+# group.colors <- c('non-sjogrens sicca' = "#B3A98C", 'ss' = "#E69F00")
+# plot_data$Group <- factor(plot_data$Group, levels = c('non-sjogrens sicca', 'ss'))
 
 # group.colors <- c(healthy = "#B3A98C", 'non-sjogrens sicca' = "#E69F00", RA = "#E69F00",psa = "#E69F00",pso = "#E69F00",ss = "#E69F00",sle = "#E69F00" ) 
 # plot_data$Group <- factor(plot_data$Group, levels = c('healthy', 'non-sjogrens sicca', 'ss', 'sle', 'RA', 'psa', 'pso'))
@@ -168,13 +168,13 @@ plot_data$Group <- factor(plot_data$Group, levels = c('healthy', 'affected'))
 # PsAvH
 # pdf("/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs11/lefse_pretty.pdf", width=20, height=20)
 # SSvH
-# pdf("/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs12/lefse_pretty.pdf", width=20, height=20)
+# pdf("/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs12/lefse_pretty.pdf", width=20, height=10)
 # SLEvH
-#pdf("/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs13/lefse_pretty.pdf", width=20, height=20)
+pdf("/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs13/lefse_pretty.pdf", width=20, height=20)
 # SICCAvH
-#pdf("/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs14/lefse_pretty.pdf", width=20, height=20)
+# pdf("/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs14/lefse_pretty.pdf", width=20, height=20)
 # AvH
-pdf("/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs16/lefse_pretty.pdf", width=20, height=20)
+# pdf("/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs16/lefse_pretty.pdf", width=20, height=20)
 # AvH L7 MSQ138
 # pdf("/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs17/lefse_pretty.pdf", width=20, height=20)
 # AvH L7 MSQ138+141

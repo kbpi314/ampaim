@@ -81,9 +81,9 @@ dir = "/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs27/"
 vars = c('Phascolarctobacterium_A', 'Coprobacter', 'shannon_entropy')
 files = c('Phascolarctobacterium_A', 'Coprobacter', 'df_alpha')
 groups = c('Diagnosis', 'Diagnosis', 'Diagnosis')
-orders = list(c("Healthy", "RA", "PsA", "PsO", "SLE", "SS", "NSS"), 
-              c("Healthy", "RA", "PsA", "PsO", "SLE", "SS", "NSS"), 
-           c("Healthy", "RA", "PsA", "PsO", "SLE", "SS", "NSS")
+orders = list(c("Healthy", "RA", "PsA", "PsO", "SLE", "SjD", "NSS"), 
+              c("Healthy", "RA", "PsA", "PsO", "SLE", "SjD", "NSS"), 
+           c("Healthy", "RA", "PsA", "PsO", "SLE", "SjD", "NSS")
 )
 
 for (i in seq(1, length(files))) {
@@ -94,8 +94,10 @@ for (i in seq(1, length(files))) {
   
   # choose colors
   col1 <- colorRampPalette(brewer.pal(8, "Set2"))(length(unique(df[[groups[i]]])))
-  
-  # get number of groups
+  col1 <- colorRampPalette(brewer.pal(9, "Paired"))(ncol)
+  col1[1] <- 'white'
+
+    # get number of groups
   n_groups = length(unique(df[[groups[i]]]))
 
   # create tables for storing wilcoxon and ttest results

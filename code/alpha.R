@@ -124,9 +124,9 @@ bkg <- theme_bw() +
   theme(legend.title = element_text(size = 24, face = "bold", color = "black"))
 
 # choose colors
-col1 <- colorRampPalette(brewer.pal(9, "Spectral"))(length(unique(d.final$Diagnosis)))
-col1 <- colorRampPalette(brewer.pal(9, "Set2"))(length(unique(df$Diagnosis)))
-col1 <- colorRampPalette(brewer.pal(9, "Paired"))(length(unique(df$Diagnosis)))
+col1 <- colorRampPalette(brewer.pal(9, "Spectral"))(length(unique(df_alpha$Diagnosis)))
+col1 <- colorRampPalette(brewer.pal(9, "Set2"))(length(unique(df_alpha$Diagnosis)))
+col1 <- colorRampPalette(brewer.pal(9, "Paired"))(length(unique(df_alpha$Diagnosis)))
 # "black"   "#4F9AA6" "#5DB54B" "#FB9A99" "#EB5037" "#FE9425" "#CAB2D6"
 col1[1] <- "white"
 
@@ -138,7 +138,7 @@ filename_box.plot = paste(a, "all_box.plot.pdf", sep = "_")
 
 # rewrite order of factors
 d.final <- df_alpha[, c("Diagnosis","shannon_entropy")]
-dx.order = c("Healthy", "RA", "PsA", "PsO", "SLE", "SS", "NSS")
+dx.order = c("Healthy", "RA", "PsA", "PsO", "SLE", "SjD", "NSS")
 d.final$Diagnosis <- factor(d.final$Diagnosis, levels = dx.order)
 
 # get all pairs

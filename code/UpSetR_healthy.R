@@ -16,7 +16,12 @@ ncol = 7
 col2 <- colorRampPalette(brewer.pal(9, "Set2"))(ncol)[2:7]
 # col1 <- c("#E99073" "#AB98C8" "#C6B18B" "#E1D83B" "#E9C783" "#B3B3B3")
 col1 <- c("#AB98C8", "#C6B18B", "#E99073", "#E9C783", "#B3B3B3", "#E1D83B")
-col1 <- c(col2[2], col2[3], col2[1], col2[5], col2[6], col2[4])
+col2 <- colorRampPalette(brewer.pal(9, "Paired"))(ncol)
+# the order is 
+# dx.order = c("Healthy", "RA", "PsA", "PsO", "SLE", "SS", "NSS")
+
+# the order we want is bottom up PsA PsO RA SjD NSS SLE
+col1 <- c(col2[3], col2[4], col2[2], col2[6], col2[7], col2[5])
 
 
 # example of list input (list of named vectors)
@@ -25,7 +30,7 @@ listInput <- list(
   #PS = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs04/PS_lefse_healthy_sig.tsv', sep='\t',header=TRUE)$Taxa)[[1]],
   #A = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs04/A_lefse_healthy_sig.tsv', sep='\t',header=TRUE)$Taxa)[[1]],
   #RAPsA = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs04/RAPsA_lefse_healthy_sig.tsv', sep='\t',header=TRUE)$Taxa)[[1]],
-  SS = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs04/SS_lefse_healthy_sig.tsv', sep='\t',header=TRUE)$Taxa)[[1]],
+  SjD = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs04/SS_lefse_healthy_sig.tsv', sep='\t',header=TRUE)$Taxa)[[1]],
   #SSSLE = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs04/SSSLE_lefse_healthy_sig.tsv', sep='\t',header=TRUE)$Taxa)[[1]],
   NSS = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs04/NSS_lefse_healthy_sig.tsv', sep='\t',header=TRUE)$Taxa)[[1]],
   SLE = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs04/SLE_lefse_healthy_sig.tsv', sep='\t',header=TRUE)$Taxa)[[1]],
@@ -47,10 +52,10 @@ upset(fromList(listInput),#fromExpression(input),
       nsets=20, # 5 is default here
       text.scale = c(3,2.5,1,# c(intersection size title, intersection size tick labels, set size title, 
                      1.25,2,1),  #set size tick labels, set names, numbers above bars)
-      main.bar.color = "gray23", 
+      # main.bar.color = "gray23", 
       sets.bar.color =col1,
       keep.order=F,
-      set_size.show=T,
+      # set_size.show=T,
       mainbar.y.max=15,
       show.numbers=T)
 dev.off()
