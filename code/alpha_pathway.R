@@ -80,10 +80,10 @@ max.outlier <- function(x) {
 ############################################################################
 
 # set working dir
-dir = "/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs27/"
+dir = "/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs06/"
 
 ### Alpha Diversity Boxplots ###
-df_alpha = read.table('/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs27/df_alpha.tsv', 
+df_alpha = read.table('/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs06/df_alpha_pathway.tsv', 
                       sep = '\t', header = TRUE, row.names = 1, check.names = FALSE,
                       na.strings = "NA")
 
@@ -149,14 +149,13 @@ d.final$Diagnosis <- factor(d.final$Diagnosis, levels = dx.order)
 
 # create plot
 p <- ggplot(d.final, aes(x = Diagnosis, y = shannon_entropy, fill = Diagnosis)) +
-  geom_boxplot(outlier.shape = NA) +
+  geom_boxplot() +
   bkg + 
   # theme_minimal() +
   theme(legend.position = "none") + 
-  labs(x = "Diagnosis", y = "Alpha Diversity (Shannon)") +
+  labs(x = "Diagnosis", y = "Shannon Entropy") +
   geom_jitter(width = 0.2, alpha = 0.7, size = 2) + 
-  geom_pwc(method = 'wilcox.test', label = 'p.signif',  hide.ns = TRUE, p.adjust.method='none',
-           symnum.args=list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.06, Inf), symbols = c("****", "***", "**", "*", "ns"))) +
+  geom_pwc(method = 'wilcox.test', label = 'p.signif',  hide.ns = TRUE, p.adjust.method='none') +
   scale_fill_manual(values = col1)#  + 
 
 fpb = paste(dir, filename_box.plot, sep = "")

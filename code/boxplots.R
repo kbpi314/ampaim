@@ -78,26 +78,26 @@ bkg <- theme_bw() +
 dir = "/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs27/"
 
 ### Alpha Diversity Boxplots ###
-vars = c('Coprobacter', 'Phascolarctobacterium_A', 'shannon_entropy')
-files = c('Coprobacter', 'Phascolarctobacterium_A', 'df_alpha')
-groups = c('Diagnosis', 'Diagnosis', 'Diagnosis')
+vars = c('Coprobacter', 'Phascolarctobacterium', 'Akkermansia', 'Roseburia', 'Faecalibacterium')
+groups = c('Diagnosis', 'Diagnosis', 'Diagnosis','Diagnosis','Diagnosis')
 orders = list(c("Healthy", "RA", "PsA", "PsO", "SLE", "SjD", "NSS"), 
               c("Healthy", "RA", "PsA", "PsO", "SLE", "SjD", "NSS"), 
-           c("Healthy", "RA", "PsA", "PsO", "SLE", "SjD", "NSS")
+              c("Healthy", "RA", "PsA", "PsO", "SLE", "SjD", "NSS"),
+              c("Healthy", "RA", "PsA", "PsO", "SLE", "SjD", "NSS"),
+              c("Healthy", "RA", "PsA", "PsO", "SLE", "SjD", "NSS")
 )
 
-for (i in seq(1, 1)){#length(files))) {
-  # read data
-  df = read.table(paste0('/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs27/', files[i], '.tsv'), 
-                  sep = '\t', header = TRUE, row.names = 1, check.names = FALSE,
-                  na.strings = "NA")
-  
+# read data
+df = read.table(paste0('/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/inputs/df_otu_meta_fxn_logt.csv'), 
+                sep = ',', header = TRUE,  row.names = 1, check.names = FALSE,
+                na.strings = "NA")
+
+for (i in 1:length(vars)) {
   # choose colors
-  col1 <- colorRampPalette(brewer.pal(8, "Set2"))(length(unique(df[[groups[i]]])))
   col1 <- colorRampPalette(brewer.pal(9, "Paired"))(7)
   col1[1] <- 'white'
 
-    # get number of groups
+  # get number of groups
   n_groups = length(unique(df[[groups[i]]]))
 
   # create tables for storing wilcoxon and ttest results
@@ -118,20 +118,20 @@ for (i in seq(1, 1)){#length(files))) {
   # }
   
   # save
-  ft.all = paste0(dir, files[i], "_stats.csv")
+  ft.all = paste0(dir, vars[i], "_stats.csv")
   write.csv(file = ft.all, stats.table.all)
 
   ### bar plot ###
   
   # create filenames
-  filename_box.plot = paste0(files[i], "_box.plot.pdf")
+  filename_box.plot = paste0(vars[i], "_box.plot.pdf")
   
   # rewrite order of factors
   df[[groups[i]]] <- factor(df[[groups[i]]], levels = orders[[i]])
   
   # create plot
   p <- ggplot(df, aes_string(x = groups[i], y = vars[i], fill = groups[i])) +
-    geom_boxplot() +
+    geom_boxplot(outlier.shape = NA) +
     bkg + 
     # theme_minimal() +
     theme(legend.position = "none") + 
@@ -140,7 +140,7 @@ for (i in seq(1, 1)){#length(files))) {
     geom_pwc(method = 'wilcox.test', 
              method.args = list(exact = FALSE, conf.level=0.94), label = 'p.signif',  
              hide.ns = TRUE, p.adjust.method='none', ref.group=orders[[i]][1],
-             symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.06, Inf), 
+             symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, Inf), 
                                  symbols = c("****", "***", "**", "*", "ns"))) +
     scale_fill_manual(values = col1)#  + 
   

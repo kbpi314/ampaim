@@ -7,7 +7,7 @@ library(stringr)
 #######
 bkg <-
   theme(axis.text.x = element_text(size = 24, color = "black")) +
-  theme(axis.text.x = element_text(angle=90, vjust = 0.5, hjust = 1)) +
+  theme(axis.text.x = element_text(angle=0, vjust = 0.5, hjust = 1)) +
   theme(axis.title.x = element_text(margin = unit(c(0,0,4,0), "mm"))) +
   theme(axis.title.x = element_text(size = 24, color = "black")) +
   theme(axis.text.y = element_text(size = 24, color = "black")) +
@@ -61,16 +61,14 @@ slices = list(c(),
               c(),
               c(),
               c(),
-              c(3,7),
-              c(4,9),
-              c(NA,NA))
+              c(),#3,7),
+              c(),#4,9),
+              c())#NA,NA))
 
-paths = c('8_metabolites', '10_acpa_fecal', '11_acpa_plasma', '12_olink', '13_metabolon', '15_taxa', '16_path')
-offsets = c(3, 3, 3, 3, 2, 2, 2)
-nvars = c(11, 116, 116, 86, 10, 690, 327)
-sizes = c(24, 16, 16, 24, 16, 24, 16)
-units = c(" abundance (nmol/mg)", " abundance (MFI)", " abundance (MFI)", " level (NPX)", " abundance (ng/ml)", " abundance", "")
-data_fp = c("metabolites.txt", "acpa_fecal.txt", "acpa_plasma.txt", "olink.tsv", "metabolon.tsv", "taxa.tsv", "path.tsv")
+# make list of lists for UpSetR
+healthy <- vector("list", length=7) 
+disease <- vector("list", length=7)
+
 
 ### statistics ###
 for (k in 1:length(aimds)){
@@ -118,9 +116,6 @@ for (k in 1:length(aimds)){
     taxa_strs <- append(taxa_strs, taxa_str)
   }
   plot_data$Taxa <- as.character(taxa_strs)
-  #plot_data$Taxa <- sub(".*_s__", '', plot_data$RawTaxa)
-  plot_data[plot_data$Group == "Control",]$LDA <- -1 * plot_data[plot_data$Group == "Control",]$LDA
-  
   
   # exclude non family results
   plot_data <- plot_data[grep("f__", plot_data$Taxa),]
@@ -140,27 +135,66 @@ for (k in 1:length(aimds)){
   # drop empty taxa strings
   plot_data <- plot_data[!(is.na(plot_data$Taxa) | plot_data$Taxa==""), ]
   
-  # sort by LDA magnitude 
-  plot_data <- plot_data[order(plot_data$LDA,decreasing=TRUE),]
+  # string specific substitutions
+  plot_data$Taxa <- str_replace_all(plot_data$Taxa, 'Phascolarctobacterium_A', 'Phascolarctobacterium')
+  plot_data$Taxa <- str_replace_all(plot_data$Taxa, 'Clostridium_AQ', 'Clostridium')
+  #plot_data$Taxa <- str_replace_all(plot_data$Taxa, 'Clostridium_Q_134516', 'Clostridium')
+  plot_data$Taxa <- str_replace_all(plot_data$Taxa, 'Coprococcus_A_121497', 'Coprococcus')
+  plot_data$Taxa <- str_replace_all(plot_data$Taxa, 'Eubacterium_R', 'Eubacterium')
+  plot_data$Taxa <- str_replace_all(plot_data$Taxa, 'Pseudoruminococcus_A', 'Psuedoruminoccocus')
+  plot_data$Taxa <- str_replace_all(plot_data$Taxa, 'Adlercreutzia_404257', 'Adlercreutzia')
+  plot_data$Taxa <- str_replace_all(plot_data$Taxa, 'Anaerotignum_189125', 'Anaerotignum')
+  plot_data$Taxa <- str_replace_all(plot_data$Taxa, 'Alistipes_A_871404', 'Alistipes')
+  
   
   # remove duplicates in Taxa
   plot_data <- plot_data[!duplicated(plot_data$Taxa),]
+  
+  # remove taxa on this specific list
+  # butyrate producers; eubacterium, agathobaculum, acidaminococacceae, anaerostipes, phasco, coprococcus
+  plot_data <- subset(plot_data, !(Taxa %in% c(
+    'QALR01', 'Frisingicoccus', 'SFMI01', 'CAG_914', 'CAG_272', 'CAG_41', 'CAG_74', 'CAG_83', 'UBA660',
+    'CAG_914', 'PeH17', 'UBA2658', 'COE1', 'WQUU01', 'UBA7173', 'CAG_475', 'CAG_917',
+    'UBA2658', 'WQUU01', 'COE1', 'G11', 'UBA1381', 'CAG_353', 'UBA5905','Clostridium_Q_135822',
+    'Onthenecus','Butyricicoccaceae','Paramuribaculum','Muribaculaceae', 'Clostridium_Q_134516',
+    'Mediterraneibacter_A_155507', 'Bariatricus','Desulfovibrio_R_446353',
+    'Tidjanibacter', # IBS apparently
+    'Desulfovibrionaceae')
+  ))
+  # grab healthy and disease
+  healthy_data = subset(plot_data, (Group %in% c('healthy')))
+  healthy_taxa = healthy_data$Taxa
+  healthy[[i]] <- healthy_taxa
+  
+  disease_data = subset(plot_data, (Group %in% c(aimd)))
+  disease_taxa = disease_data$Taxa
+  if (aimd == 'RA'){
+    print(aimd)
+    print(disease_data)
+    print(disease_taxa)
+  }
+  disease[[i]] <- disease_taxa
+  
+  # sort by LDA magnitude 
+  plot_data <- plot_data[order(plot_data$LDA,decreasing=TRUE),]
   
   # keep first 5 duplicates (top values) for each group
   plot_data <- plot_data %>%
                group_by(Group) %>%
                filter(row_number() <= 5)
   
+  # flip directionality for healthy
+  #plot_data$Taxa <- sub(".*_s__", '', plot_data$RawTaxa)
+  plot_data[plot_data$Group == "healthy",]$LDA <- -1 * plot_data[plot_data$Group == "healthy",]$LDA
+  
+  # save results
+  write.csv(plot_data,paste0("/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs27/lefse_csv_", aimd, '.csv'), row.names = FALSE)
   
   # save pdf
-  pdf(paste0("/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs27/",aimd,"_lefse_pretty.pdf"), width=10, height=6)
+  pdf(paste0("/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs27/lefse_barplot_pretty_",aimd,'.pdf'), width=10, height=6)
 
-  
   p <- ggbarplot(plot_data, x="Taxa", y="LDA", fill="Group", width= 1, color = "white", sort.val = "asc", sort.by.groups=TRUE) +  
     labs(x = "", y = "LDA score", fill="Group") + coord_flip() + 
-    #scale_fill_manual(name="Legend", values = c("Affected", "Healthy')")) +
-    # scale_fill_manual(values=c("#E69F00",'#B3A98C','#605843')) + bkg # flip around as need be
-    # scale_fill_manual(values=c("#B3A98C",'#E69F00','#605843')) + bkg # flip around as need be
     scale_fill_manual(values=group.colors) + bkg + theme(legend.position = "none")
   plot(p)
   dev.off()

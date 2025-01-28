@@ -21,7 +21,7 @@ library(tidyverse)
 library(dplyr)
 library(tidyr)
 library(scales)
-library(ggpubr)
+# library(ggpubr)
 
 ############################################################################
 ############################################################################
@@ -128,7 +128,7 @@ summary(out)
 
 # background theme
 bkg <- theme_bw() +
-  theme(axis.text.x = element_text(size = 18, color = "black")) +
+  theme(axis.text.x = element_text(size = 18, color = "black",face = "bold")) +
   theme(axis.text.y = element_text(size = 12, color = "black")) +
   theme(axis.title.x = element_text(size = 18, color = "black", face = "bold")) +
   theme(axis.title.x = element_text(margin = unit(c(0, 8, 0, 0), "mm"))) +
@@ -154,10 +154,10 @@ p <- ggplot(data = df, aes(x = Medication_Status, y = shannon_entropy, fill = Me
   stat_summary(fun.data = stats.boxplot, geom = "crossbar", 
                color = "black", size = 0.5, width = 0.5) +
   geom_jitter(width = 0.1, size = 1.5) +
-  scale_x_discrete(labels = c("On Medication", "No Medication")) +
+  scale_x_discrete(labels = c("Treated", "Untreated")) +
   scale_fill_manual(values = col1) +      
   xlab(NULL) +
-  ylab('Shannon Entropy') +
+  ylab('Alpha Diversity (Shannon)') +
   bkg +
   theme(legend.position = "none")
 

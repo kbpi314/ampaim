@@ -77,11 +77,14 @@ col1 <- colorRampPalette(brewer.pal(9, "Paired"))(length(unique(df$Diagnosis)))
 
 col1[1] <- "black"
 col1 <- c("#ADD8E6", "blue")
+col1 <- c('blue',"#ADD8E6")
+
 # healthy = "#B3A98C", RA = "#E69F00")
 # order factors for legend
-med.order = c("NoMed", "Med")
+# med.order = c("NoMed", "Med")
+med.order = c("Untreated", "Treated")
 
-df$Medication_Status <- factor(df$Medication_Status, levels=med.order)
+df$Medication_Status <- factor(df$Medication_Status2, levels=med.order)
 
 for (j in seq_along(dists)) {
   # create filenames
@@ -89,9 +92,9 @@ for (j in seq_along(dists)) {
   
   # plot beta diversity
   p <- ggplot() + # data=df, aes(x = PC1, y = PC2, fill = Diagnosis)) +
-    geom_point(data = df, aes(x = PC1, y = PC2, color = Medication_Status),size=4) +
+    geom_point(data = df, aes(x = PC1, y = PC2, color = Medication_Status2),size=4) +
     scale_color_manual(values = col1,
-                       labels = c('NoMed','Med')) + #, 'RA *', 'PsA *', 'PsO *', 'SLE (n.s.)', 'SjD (n.s.)', 'NSS (n.s.)')) +
+                       labels = c('Treated','Untreated')) + #, 'RA *', 'PsA *', 'PsO *', 'SLE (n.s.)', 'SjD (n.s.)', 'NSS (n.s.)')) +
     bkg + theme(legend.title=element_blank()) + 
     scale_x_continuous(labels = f.dec) + # 2 decimal places on x-axis
     scale_y_continuous(labels = f.dec)   # 2 decimal places on y-axis

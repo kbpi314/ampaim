@@ -60,13 +60,13 @@ f.dec <- function(x){
 }
 
 # directory for storing files
-dir = "/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs27/"
+dir = "/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs06/"
 
 # list of distance methods
 dists <- c('unifrac')
 
 # load data
-df <- read.delim(file="/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs27/unweighted_pcoa.tsv",
+df <- read.delim(file="/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs06/unweighted_pcoa_pathway.tsv",
               row.names=1)
 
 # choose colors
@@ -87,7 +87,7 @@ for (j in seq_along(dists)) {
   p <- ggplot() + # data=df, aes(x = PC1, y = PC2, fill = Diagnosis)) +
     geom_point(data = df, aes(x = PC1, y = PC2, color = Diagnosis),size=4) +
     scale_color_manual(values = col1,
-                       labels = c('Healthy', 'RA *', 'PsA *', 'PsO *', 'SLE (n.s.)', 'SjD *', 'NSS *')) +
+                       labels = c('Healthy', 'RA *', 'PsA *', 'PsO *', 'SLE (n.s.)', 'SjD (n.s.)', 'NSS (n.s.)')) +
     bkg +
     scale_x_continuous(labels = f.dec) + # 2 decimal places on x-axis
     scale_y_continuous(labels = f.dec)   # 2 decimal places on y-axis
