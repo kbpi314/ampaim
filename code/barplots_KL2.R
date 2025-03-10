@@ -81,16 +81,18 @@ dir = "/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs27/"
 vars = c('Coprobacter', 'Phascolarctobacterium_A', 'shannon_entropy')
 files = c('Coprobacter', 'Phascolarctobacterium_A', 'df_alpha')
 groups = c('Diagnosis', 'Diagnosis', 'Diagnosis')
-orders = list(c("Healthy", "RA", "PsA", "PsO", "SLE", "SjD", "NSS"), 
-              c("Healthy", "RA", "PsA", "PsO", "SLE", "SjD", "NSS"), 
-           c("Healthy", "RA", "PsA", "PsO", "SLE", "SjD", "NSS")
+orders = list(c("Healthy", "RA", "PsA", "PsO"),#, "SLE", "SjD", "NSS"), 
+              c("Healthy", "RA", "PsA", "PsO"),#, "SLE", "SjD", "NSS"), 
+           c("Healthy", "RA", "PsA", "PsO")#, "SLE", "SjD", "NSS")
 )
 
-for (i in seq(1, 1)){#length(files))) {
+for (i in seq(1, length(files))) {
   # read data
   df = read.table(paste0('/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs27/', files[i], '.tsv'), 
                   sep = '\t', header = TRUE, row.names = 1, check.names = FALSE,
                   na.strings = "NA")
+  
+  df = df[df$Diagnosis %in% orders[[i]],]
   
   # choose colors
   col1 <- colorRampPalette(brewer.pal(8, "Set2"))(length(unique(df[[groups[i]]])))
@@ -118,13 +120,13 @@ for (i in seq(1, 1)){#length(files))) {
   # }
   
   # save
-  ft.all = paste0(dir, files[i], "_stats.csv")
+  ft.all = paste0(dir, files[i], "_stats_KL2.csv")
   write.csv(file = ft.all, stats.table.all)
 
   ### bar plot ###
   
   # create filenames
-  filename_box.plot = paste0(files[i], "_box.plot.pdf")
+  filename_box.plot = paste0(files[i], "_box.plot_KL2.pdf")
   
   # rewrite order of factors
   df[[groups[i]]] <- factor(df[[groups[i]]], levels = orders[[i]])
@@ -140,7 +142,7 @@ for (i in seq(1, 1)){#length(files))) {
     geom_pwc(method = 'wilcox.test', 
              method.args = list(exact = FALSE, conf.level=0.94), label = 'p.signif',  
              hide.ns = TRUE, p.adjust.method='none', ref.group=orders[[i]][1],
-             symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.06, Inf), 
+             symnum.args = list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, Inf), 
                                  symbols = c("****", "***", "**", "*", "ns"))) +
     scale_fill_manual(values = col1)#  + 
   
