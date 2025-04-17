@@ -54,12 +54,12 @@ inputs/
 		qiime_mapping_file_batch_nocd.tsv # copied this to become the above to perserve final names
 
 outputs/
-	jobs00              # validation of eiser; LEfSe of axial v periperhal at L7
+	jobs00              			# validation of eiser; LEfSe of axial v periperhal at L7
 	jobs01							# pan RA PsA phenotype as well as each individually, metadata correlations
 	jobs02 							# CUTIE jobs of all subsets at L6 and L7
 	jobs03							# DMM
 	jobs04							# UpSetR
-	jobs05              # CUTIE jobs with FDR at L6 and L7
+	jobs05              			# CUTIE jobs with FDR at L6 and L7
 	jobs06							# PICRUST2 output 
 	jobs07							# CUTIE picrust2 L6 and L7
 	jobs08							# pairwise jobs (alpha, beta, LEfSe): starting with NSS SS
@@ -77,7 +77,17 @@ outputs/
 	jobs19-26; same for species
 	jobs27							# nicer figures for paper in R
 	jobs28							# SparCC
-
+	jobs29-33						# clinical severity analyses
+	jobs34							# ''
+	jobs35							# antibodies	
+	jobs36							# SJC TJC ab with alpha, beta pathways, taxa
+	jobs37							# taxa
+	jobs38							# pathways
+	jobs39                          # TEST SRA download PRJNA317370
+	jobs40							# PRJNA634145
+	jobs41							# PRJNA626512
+	jobs42							# PRJNA791216
+	
 
 	CDP_MSQ141_batch_correct_GG1
 		jobs09							# reran with batch correction; lefse for merged batch 138 + 141 RA
@@ -350,7 +360,41 @@ done
 
 python /sc/arion/projects/clemej05a/jakleen/humann/brite/map_ko_kegg_v3.py -i /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs06/picrust2_out/KO_metagenome_out/pred_metagenome_unstrat.tsv -m /sc/arion/projects/clemej05a/jakleen/humann/brite/ko_map_kegg_20240328.txt -o /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs06/picrust2_out/KO_metagenome_out/pred_metagenome_unstrat_kegg.tsv
 
+# picurst2 pcoa
 
+# activate env
+source activate /sc/arion/projects/MMEDS/.modules/qiime2-2023.9;
+
+# convert this file into a biom and then into a qza
+biom convert --to-hdf5 -i /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs06/picrust2_out/KO_metagenome_out/pred_metagenome_unstrat_kegg.tsv -o /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs06/pred_metagenome_unstrat_kegg.biom
+
+# convert biom to qza
+qiime tools import --type 'FeatureTable[Frequency]' --input-path /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs06/pred_metagenome_unstrat_kegg.biom --output-path /sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs06/pred_metagenome_unstrat_kegg.qza
+
+
+# diversity analyses in jobs02 
+# JL_run_core_metrics.sh, JL_run_core_metrics_alpha_analysis.sh, JL_run_core_metrics_beta_analysis.sh
+# renamed to run_core_metrics.sh, etc.
+# ensure the following replacements are made 
+input_fp=/sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs06/pred_metagenome_unstrat_kegg.qza
+depth=16000000 # min read count sum in file
+metadata_fp=/sc/arion/projects/clemej05a/kevin/ampaim/inputs/Q2_MSQ138_141_noctrl_noeiser_nocd_correct_old/qiime_mapping_file_batch_nocd.tsv
+output_dir=/sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs06/div/
+# manually saved each alpha div tsv metadata as 'metadata_shannon.tsv' etc. from Q2 view
+
+# convert distance matrix to tsv
+qiime tools export \
+--input-path /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs02/Q2_outputs/bray_curtis_distance_matrix.qza \
+--output-path /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs02/Q2_outputs/
+
+# scp Q2_outputs to local after copying for various plots
+cp /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs02/Q2_outputs/distance-matrix.tsv /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs02/Q2_outputs/bray_curtis_distance_matrix.tsv
+
+
+# obtain ordination
+qiime tools export \
+--input-path /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs02/Q2_outputs/bray_curtis_pcoa_results.qza \
+--output-path /sc/arion/projects/clemej05a/kevin/twinsra/outputs/jobs02/Q2_outputs/
 
 
 
@@ -1103,3 +1147,66 @@ corr_compare: False
 [graph]
 graph_bound: 100
 fix_axis: False
+
+
+###
+# Meta analyses
+###
+
+# jobs39 
+# issue with lines somewhere
+
+
+
+
+# jobs41 smol issue with lines
+# off by 1
+SRR11570827
+
+
+# pipeline
+# (1) download into SRA_data using adam's script
+# (2) source activate fastq-pair and delete *fastq and *single*
+for file in *_1.fastq; 
+do   
+prefix="${file%%_*}";   
+echo "$prefix"; 
+fastq_pair ${prefix}_1.fastq ${prefix}_2.fastq;
+done
+
+# (3) rename
+rename _1.fastq.paired.fq _S1_L001_R1_001.fastq *;
+rename _2.fastq.paired.fq _S1_L001_R2_001.fastq *;
+
+# (4) zip them all
+
+# (5) in MMEDS create new folder
+/sc/arion/projects/MMEDS/mmeds_server_data/studies/Kbpi314_AMP_AIM_Validation_2_0/
+	#subfolders
+	Analysis_core_pipeline_taxonomic_0/
+	Snakefile # copy as is?
+	config_file.yaml # copy as is?
+	jobfile_0.lsf # change these paths
+		section_AMPAIM_validation2/
+			stripped_output/
+				SRR11570850_S1_L001_R1_001.fastq.gz 
+				...
+		tables/
+			# symbolic link to classifier with object edited so 'scikit learn package' is consistent LOL greengenes2.2020-10.nb-classifier.old_qiime2.qza 
+			 # #SampleID and HostSubjectId (for LEfSe) and any metadat cols to do lefse on are the only required things! make sure #q2:types and categorical are also present
+			 qiime_mapping_file.tsv
+	Analysis_lefse_0
+		tables/
+			qiime_mapping_file.tsv  
+			Diagnosis/ # also automatic I think
+			taxa_table_L7.qza   # produced automatically i think
+			taxa_table_L7.tsv   # also automatic
+		jobfile_0.lsf
+		Snakefile
+		config_file.yaml
+
+
+
+
+
+
