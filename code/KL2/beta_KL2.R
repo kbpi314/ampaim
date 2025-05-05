@@ -1,34 +1,6 @@
-################################# 
-## R script                    ##
-## Project: AMP AIM            ##
-## 16S                         ##
-## Beta diversity pcoa plots   ##
-## Author: Kevin Bu            ##
-## Last Updated: 7/16/24       ##
-#################################
-
-### Load and save current R script ###
-# Load R scripts
-# load(file="/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs27/beta.RData")
-
-# Save R script
-# Do this step prior to closing R
-# save.image(file="/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs27/beta.RData")
-
-############################################################################
-############################################################################
-############################################################################
 
 ### Load libraries ###
 
-#library(phyloseq)
-#library(vegan)
-#library(ade4)
-#library(PMCMR)
-#library(PMCMRplus)
-#library(ggplot2)
-#library(ggthemes)
-#library(ggrepel)
 library(ggplot2)
 library(ggpubr)
 library(tidyverse)
@@ -48,7 +20,7 @@ bkg <- theme_bw() +
   theme(axis.title = element_text(size = 24, color = "black", face = "bold")) +
   theme(axis.title.x = element_text(margin = unit(c(8, 0, 0, 0), "mm"))) +
   theme(axis.title.y = element_text(margin = unit(c(0, 8, 0, 0), "mm"))) +
-  theme(legend.text = element_text(size = 24, color = "black"))+ #, face = "bold")) +
+  theme(legend.text = element_text(size = 18, color = "black"))+ #, face = "bold")) +
   # theme(legend.title = element_blank()) +
   theme(legend.title = element_text(size = 24, face = "bold", color = "black"))
   theme(legend.justification = "right")# +
@@ -68,7 +40,7 @@ dists <- c('unifrac')
 # load data
 df <- read.delim(file="/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs27/unweighted_pcoa.tsv",
               row.names=1)
-
+df = df[df$Diagnosis %in% c("Healthy","RA", "PsA", "PsO"),]
 # choose colors
 col1 <- colorRampPalette(brewer.pal(9, "Set2"))(length(unique(df$Diagnosis)))
 col1 <- colorRampPalette(brewer.pal(9, "Paired"))(length(unique(df$Diagnosis)))
@@ -76,18 +48,18 @@ col1 <- colorRampPalette(brewer.pal(9, "Paired"))(length(unique(df$Diagnosis)))
 col1[1] <- "black"
 
 # order factors for legend
-dx.order = c("Healthy", "RA", "PsA", "PsO", "SLE", "SjD", "NSS")
+dx.order = c("Healthy", "RA", "PsA", "PsO")# "SLE", "SjD", "NSS")
 df$Diagnosis <- factor(df$Diagnosis, levels=dx.order)
 
 for (j in seq_along(dists)) {
   # create filenames
-  filename_plot = paste("bdiv", dists[j], "plot.pdf", sep = "_")
+  filename_plot = paste("bdiv", dists[j], "plot_KL2.pdf", sep = "_")
   
   # plot beta diversity
   p <- ggplot() + # data=df, aes(x = PC1, y = PC2, fill = Diagnosis)) +
     geom_point(data = df, aes(x = PC1, y = PC2, color = Diagnosis),size=4) +
     scale_color_manual(values = col1,
-                       labels = c('Healthy', 'RA *', 'PsA *', 'PsO *', 'SLE (n.s.)', 'SjD *', 'NSS *')) +
+                       labels = c('Healthy', 'RA *', 'PsA *', 'PsO *')) + #, 'SLE (n.s.)', 'SjD *', 'NSS *')) +
     bkg +
     scale_x_continuous(labels = f.dec) + # 2 decimal places on x-axis
     scale_y_continuous(labels = f.dec)   # 2 decimal places on y-axis

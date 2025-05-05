@@ -1,23 +1,4 @@
-################################# 
-## R script                    ##
-## Project: AMP AIM            ##
-## Alpha diversity             ##
-## Data: 16S                   ##
-## Author: Kevin Bu            ##
-## Date Created: 7/15/24       ##
-#################################
 
-### Load and save current R script ###
-# Load R scripts
-# load(file="/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs27/alpha.RData")
-
-# Save R script
-# Do this step prior to closing R
-# save.image(file="/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs27/alpha.RData")
-
-############################################################################
-############################################################################
-############################################################################
 
 ### Load libraries ###
 library(ggplot2)
@@ -87,6 +68,7 @@ df_alpha = read.table('/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outpu
                       sep = '\t', header = TRUE, row.names = 1, check.names = FALSE,
                       na.strings = "NA")
 
+df_alpha = df_alpha[df_alpha$Diagnosis %in% c("Healthy", "RA", "PsA", "PsO"),]
 
 # create tables for storing wilcoxon and ttest results
 stats.table.all <- matrix(data = NA, nrow = 1, ncol = 3)
@@ -103,7 +85,7 @@ stats.table.all[1,2] <- kruskal.test(df_alpha[,4] ~ Diagnosis, data = df_alpha)$
 stats.table.all[1,3] <- oneway.test(df_alpha[,4] ~ Diagnosis, data = df_alpha)$p.value
 
 # save
-ft.all = paste(dir, "alpha_stats.csv", sep = "")
+ft.all = paste(dir, "alpha_stats_KL2.csv", sep = "")
 write.csv(file = ft.all, stats.table.all)
 
 
@@ -134,11 +116,11 @@ col1[1] <- "white"
 a <- 'shannon_entropy'
 
 # create filenames
-filename_box.plot = paste(a, "all_box.plot.pdf", sep = "_")  
+filename_box.plot = paste(a, "all_box.plot.KL2.pdf", sep = "_")  
 
 # rewrite order of factors
 d.final <- df_alpha[, c("Diagnosis","shannon_entropy")]
-dx.order = c("Healthy", "RA", "PsA", "PsO", "SLE", "SjD", "NSS")
+dx.order = c("Healthy", "RA", "PsA", "PsO")#, "SLE", "SjD", "NSS")
 d.final$Diagnosis <- factor(d.final$Diagnosis, levels = dx.order)
 
 # get all pairs
@@ -155,16 +137,8 @@ p <- ggplot(d.final, aes(x = Diagnosis, y = shannon_entropy, fill = Diagnosis)) 
   theme(legend.position = "none") + 
   labs(x = "Diagnosis", y = "Alpha Diversity (Shannon)") +
   geom_jitter(width = 0.2, alpha = 0.7, size = 2) + 
-  geom_pwc(method = 'wilcox.test', 
-           label = 'p.signif',  
-           hide.ns = TRUE, 
-           p.adjust.method = 'none',
-           vjust = 0.5, # default 0, positive pushes it towards bar, negative further vertically away up; 1 is on the bar
-           size = 0.8, # default 0.3
-           label.size = 8, # default 3.88
-           symnum.args=list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, Inf), 
-                            symbols = c("****", "***", "**", "*", "ns"))
-           ) +
+  geom_pwc(method = 'wilcox.test', label = 'p.signif',  hide.ns = TRUE, p.adjust.method='none',
+           symnum.args=list(cutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, Inf), symbols = c("****", "***", "**", "*", "ns"))) +
   scale_fill_manual(values = col1)#  + 
 
 fpb = paste(dir, filename_box.plot, sep = "")
