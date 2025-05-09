@@ -101,4 +101,5 @@ df <- df_int[df_int$int == 'AMPAIM.PsA_HC|AMPAIM.RA_HC|AMPAIM.SLE_HC|Su2020.SLE_
 df <- df_int[df_int$int == 'AMPAIM.PsO_HC|AMPAIM.RA_HC|AMPAIM.SLE_HC|Su2020.SLE_HC|Wang2022.SjD_HC',]
 df <- df_int[df_int$int == 'AMPAIM.RA_HC|AMPAIM.SLE_HC|Wang2022.SjD_HC|Yu2022.RA_HC',]
 
+df<-df_int[df_int$int == 'AMPAIM.PsO_HC|Luca2024.PsO_HC',]
 df$gene
