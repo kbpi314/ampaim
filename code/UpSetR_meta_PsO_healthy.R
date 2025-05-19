@@ -30,22 +30,12 @@ col1 <- c(#col2[2], col2[2],
 
 # example of list input (list of named vectors)
 listInput <- list(
-  #AMPAIM.PsA_HC = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs100/AMPAIM_PsA_healthy.tsv', sep='\t',header=TRUE)$Taxa)[[1]],
-  #Gill2022.AxSpA_HC = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs100/Gill2022_AxSpA_healthy control.tsv', sep='\t',header=TRUE)$Taxa)[[1]],
-
-  AMPAIM.SLE_HC = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs100/AMPAIM_SLE_healthy.tsv', sep='\t',header=TRUE)$Taxa)[[1]],
-  Valid1SLE.SLE_HC = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs100/Valid1SLE_SLE_HC.tsv', sep='\t',header=TRUE)$Taxa)[[1]],
-    
-  AMPAIM.RA_HC = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs100/AMPAIM_RA_healthy.tsv', sep='\t',header=TRUE)$Taxa)[[1]],
-  Valid4RA.RA_HC = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs100/Valid4RA_RA_HC.tsv', sep='\t',header=TRUE)$Taxa)[[1]],
-  Valid7RA.RA_HC = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs100/Valid7RA_RA_HLT.tsv', sep='\t',header=TRUE)$Taxa)[[1]],
-  
   AMPAIM.PsO_HC = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs100/AMPAIM_PsO_healthy.tsv', sep='\t',header=TRUE)$Taxa)[[1]],
   Valid5PsO.PsO_HC = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs100/Valid5PsO_PsO_HC.tsv', sep='\t',header=TRUE)$Taxa)[[1]],
   Valid8PsO.PsO_HC = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs100/Valid8PsO_PsO_HC.tsv', sep='\t',header=TRUE)$Taxa)[[1]],
+  Valid9PsO.PsO_HC = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs100/Valid9PsO_PsO_HC.tsv', sep='\t',header=TRUE)$Taxa)[[1]],
+  Valid10PsO.PsO_HC = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs100/Valid10PsO_PsO_HC.tsv', sep='\t',header=TRUE)$Taxa)[[1]]
   
-  AMPAIM.SjD_HC = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs100/AMPAIM_SjD_healthy.tsv', sep='\t',header=TRUE)$Taxa)[[1]],
-  Valid3SjD.SjD_HC = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs100/Valid3SjD_SjD_HC.tsv', sep='\t',header=TRUE)$Taxa)[[1]]
   
 )
 
@@ -77,7 +67,7 @@ df_int %>%
   summarise(n=n()) %>% 
   arrange(desc(n))
 
-pdf(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs100/LEfSe_UpSetR_healthy.pdf',
+pdf(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs100/LEfSe_UpSetR_PsO_healthy.pdf',
     width=8,
     height=8)
 upset(fromList(listInput),#fromExpression(input), 
@@ -96,12 +86,7 @@ upset(fromList(listInput),#fromExpression(input),
 dev.off()
 
 # query indiv sets
-df <- df_int[df_int$int == 'AMPAIM.RA_HC|AMPAIM.SLE_HC|Valid4RA.RA_HC',]
-df <- df_int[df_int$int == 'Valid1SLE.SLE_HC|Valid4RA.RA_HC',]
-df <- df_int[df_int$int == 'AMPAIM.PsA_HC|AMPAIM.RA_HC|AMPAIM.SLE_HC|Valid1SLE.SLE_HC',]
+df <- df_int[df_int$int == 'AMPAIM.PsO_HC|Valid10PsO.PsO_HC|Valid8PsO.PsO_HC',]
 
-df <- df_int[df_int$int == 'AMPAIM.PsO_HC|AMPAIM.RA_HC|AMPAIM.SLE_HC|Valid1SLE.SLE_HC|Valid3SjD.SjD_HC',]
-df <- df_int[df_int$int == 'AMPAIM.RA_HC|AMPAIM.SLE_HC|Valid3SjD.SjD_HC|Valid4RA.RA_HC',]
 
-df<-df_int[df_int$int == 'AMPAIM.PsO_HC|Valid5PsO.PsO_HC',]
 df$gene

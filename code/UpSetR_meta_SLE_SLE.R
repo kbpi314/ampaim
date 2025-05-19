@@ -34,19 +34,7 @@ listInput <- list(
   #Gill2022.AxSpA_AIMD = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs100/Gill2022_AxSpA_axial spondyloarthritis.tsv', sep='\t',header=TRUE)$Taxa)[[1]],
 
   AMPAIM.SLE_AIMD = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs100/AMPAIM_SLE_sle.tsv', sep='\t',header=TRUE)$Taxa)[[1]],
-  Valid1SLE.SLE_AIMD = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs100/Valid1SLE_SLE_SLE-G.tsv', sep='\t',header=TRUE)$Taxa)[[1]],
-  
-  AMPAIM.RA_AIMD = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs100/AMPAIM_RA_RA.tsv', sep='\t',header=TRUE)$Taxa)[[1]],
-  Valid4RA.RA_AIMD = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs100/Valid4RA_RA_RA.tsv', sep='\t',header=TRUE)$Taxa)[[1]],
-  Valid7RA.RA_AIMD = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs100/Valid7RA_RA_NORA.tsv', sep='\t',header=TRUE)$Taxa)[[1]],
-  
-  AMPAIM.PsO_AIMD = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs100/AMPAIM_PsO_PsO.tsv', sep='\t',header=TRUE)$Taxa)[[1]],
-  Valid5PsO.PsO_AIMD = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs100/Valid5PsO_PsO_PsO.tsv', sep='\t',header=TRUE)$Taxa)[[1]],
-  # Valid8PsO.PsO_AIMD = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs100/Valid8PsO_PsO_PsO.tsv', sep='\t',header=TRUE)$Taxa)[[1]],
-  
-  AMPAIM.SjD_AIMD = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs100/AMPAIM_SjD_ss.tsv', sep='\t',header=TRUE)$Taxa)[[1]],
-  Valid3SjD.SjD_AIMD = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs100/Valid3SjD_SjD_SjD.tsv', sep='\t',header=TRUE)$Taxa)[[1]]
-  
+  Valid1SLE.SLE_AIMD = list(read.table(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs100/Valid1SLE_SLE_SLE-G.tsv', sep='\t',header=TRUE)$Taxa)[[1]]
 )
 
 # thank you kind person
@@ -77,7 +65,7 @@ df_int %>%
   summarise(n=n()) %>% 
   arrange(desc(n))
 
-pdf(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs100/LEfSe_UpSetR_AIMD.pdf',
+pdf(file='/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs100/LEfSe_UpSetR_SLE_SLE.pdf',
     width=8,
     height=8)
 upset(fromList(listInput),#fromExpression(input), 
@@ -97,10 +85,7 @@ dev.off()
 
 
 # query indiv sets
-df <- df_int[df_int$int == 'AMPAIM.RA_AIMD|Valid4RA.RA_AIMD',]
-df <- df_int[df_int$int == 'AMPAIM.SjD_AIMD|Valid1SLE.SLE_AIMD|Valid3SjD.SjD_AIMD|Valid4RA.RA_AIMD',]
-
-df <- df_int[df_int$int == 'Valid5PsO.PsO_AIMD|Valid1SLE.SLE_AIMD|Valid3SjD.SjD_AIMD|Valid4RA.RA_AIMD', ]
+df <- df_int[df_int$int == 'AMPAIM.SLE_AIMD', ]
 df$gene
 
 

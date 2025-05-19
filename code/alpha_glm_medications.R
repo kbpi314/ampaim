@@ -99,6 +99,10 @@ out <- glm(shannon_entropy ~ Medication_Status, data = df, family = gaussian)
 
 summary(out)
 
+# race association and medication status
+glm(formula = shannon_entropy ~ Medication_Status + Age + Race, 
+    family = gaussian, data = df)
+
 #paths = c('8_metabolites', '10_acpa_fecal', '11_acpa_plasma', '12_olink', '13_metabolon', '15_taxa', '16_path')
 #offsets = c(3, 3, 3, 3, 2, 2, 2)
 #nvars = c(1)
