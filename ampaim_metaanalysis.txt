@@ -1,0 +1,259 @@
+###
+# Meta analyses
+###
+
+outputs
+	jobs39                          # TEST SRA download PRJNA317370 RA without metadata
+	jobs40							# PRJNA634145 Shotgun PsO
+	jobs41							# PRJNA626512 Valid1SLE
+	jobs42							# PRJNA791216 ITS stool RA
+	jobs43							# PRJNA873789 Valid2AxSpA
+	jobs44							# PRJNA814076 Valid3SjD
+	jobs45							# Valid5PsO
+	jobs46							# PRJNA753264 Valid4RA
+	jobs47							# PRJNA574485 Valid8PsO
+	jobs48							# Valid6SLE
+	jobs49							# Rooney Valid7RA
+	jobs50							# Valid10PsO
+	jobs51							# Valid9PsD
+	jobs52							# "Valid11" with original mapping
+	jobs53							# 'Valid12' with updated mapping
+
+
+	jobs99							# diversities
+	jobs100							# lefse comparisons and upsetr
+
+
+# pipeline
+# (1) download into SRA_data using adam's script
+
+# may need to do some renaming to _1 _2
+rename _f1 _1 *
+rename _r2 _2 *
+
+# (2) source activate fastq-pair and delete *fastq and *single*
+ml anaconda3
+source activate fastq-pair 
+
+for file in *_1.fastq; 
+do   
+prefix="${file%%_*}";   
+echo "$prefix"; 
+fastq_pair ${prefix}_1.fastq ${prefix}_2.fastq;
+done
+
+rm *fastq
+rm *single*
+ 
+# (3) rename
+rename _1.fastq.paired.fq _S1_L001_R1_001.fastq *;
+rename _2.fastq.paired.fq _S1_L001_R2_001.fastq *;
+
+
+# (4) zip them all
+
+# (5) in MMEDS create new folder
+/sc/arion/projects/MMEDS/mmeds_server_data/studies/Kbpi314_AMP_AIM_Validation_5_0/
+	#subfolders
+	Analysis_core_pipeline_taxonomic_0/
+	Snakefile # copy as is?
+	config_file.yaml # copy as is?
+	jobfile_0.lsf # change these paths
+		section_AMPAIM_validation1/
+			stripped_output/
+				SRR11570850_S1_L001_R1_001.fastq.gz 
+				...
+		tables/
+			# symbolic link to classifier with object edited so 'scikit learn package' is consistent LOL greengenes2.2020-10.nb-classifier.old_qiime2.qza 
+			 # #SampleID and HostSubjectId (for LEfSe) and any metadat cols to do lefse on are the only required things! make sure #q2:types and categorical are also present
+			 qiime_mapping_file.tsv
+	Analysis_lefse_0
+		tables/
+			qiime_mapping_file.tsv  
+			Diagnosis/ # also automatic I think
+			taxa_table_L7.qza   # produced automatically i think
+			taxa_table_L7.tsv   # also automatic
+		jobfile_0.lsf
+		Snakefile
+		config_file.yaml
+
+# set paths
+OLDPATH=/sc/arion/projects/MMEDS/mmeds_server_data/studies/Kbpi314_AMP_AIM_Validation_10_0/
+NEWPATH=/sc/arion/projects/MMEDS/mmeds_server_data/studies/Kbpi314_AMP_AIM_Validation_6_0
+DATAPATH=/sc/arion/projects/clemej05a/kevin/ampaim/outputs/jobs48/
+
+# (1) set up dirs and copy old working ones for both and CORE
+mkdir $NEWPATH
+mkdir $NEWPATH/Analysis_core_pipeline_taxonomic_0/
+cp $OLDPATH/Analysis_core_pipeline_taxonomic_0/Snakefile $NEWPATH/Analysis_core_pipeline_taxonomic_0/
+cp $OLDPATH/Analysis_core_pipeline_taxonomic_0/config_file.yaml $NEWPATH/Analysis_core_pipeline_taxonomic_0/
+cp $OLDPATH/Analysis_core_pipeline_taxonomic_0/jobfile_0.lsf $NEWPATH/Analysis_core_pipeline_taxonomic_0/
+mkdir $NEWPATH/Analysis_core_pipeline_taxonomic_0/section_AMPAIM_validation1/
+mkdir $NEWPATH/Analysis_core_pipeline_taxonomic_0/section_AMPAIM_validation1/stripped_output/
+cp $DATAPATH/SRA_data/*fastq.gz $NEWPATH/Analysis_core_pipeline_taxonomic_0/section_AMPAIM_validation1/stripped_output/
+mkdir $NEWPATH/Analysis_core_pipeline_taxonomic_0/tables
+
+# REPLACE HERE replace 1_0 with 2_0
+sed -i 's/Kbpi314_AMP_AIM_Validation_10_0/Kbpi314_AMP_AIM_Validation_6_0/g' $NEWPATH/Analysis_core_pipeline_taxonomic_0/jobfile_0.lsf
+ln -s $OLDPATH/Analysis_core_pipeline_taxonomic_0/tables/greengenes2.2020-10.nb-classifier.old_qiime2.qza $NEWPATH/Analysis_core_pipeline_taxonomic_0/tables/
+
+# copy mapping file; replace job name
+cp $DATAPATH/qiime_mapping_file.tsv $NEWPATH/Analysis_core_pipeline_taxonomic_0/tables/
+
+# submit the jobfile! :) 
+# may need to bump up cores to 20
+
+
+# (2) prep LEfSe
+OLDPATH=/sc/arion/projects/MMEDS/mmeds_server_data/studies/Kbpi314_AMP_AIM_Validation_10_0/
+NEWPATH=/sc/arion/projects/MMEDS/mmeds_server_data/studies/Kbpi314_AMP_AIM_Validation_11_0
+
+mkdir $NEWPATH/Analysis_lefse_0
+mkdir $NEWPATH/Analysis_lefse_0/tables
+cp $OLDPATH/Analysis_lefse_0/Snakefile $NEWPATH/Analysis_lefse_0/
+cp $OLDPATH/Analysis_lefse_0/config_file.yaml $NEWPATH/Analysis_lefse_0/
+cp $OLDPATH/Analysis_lefse_0/jobfile_0.lsf $NEWPATH/Analysis_lefse_0/
+
+# before running lefse, copy over the L7 table and qiime mapping file
+# make new mapping file and move it to $NEWPATH/Analyses_core_pipeline_taxonomic_0/tables
+# make sure metadata column matches in config
+cp $NEWPATH/Analysis_core_pipeline_taxonomic_0/tables/taxa_table_L7.qza $NEWPATH/Analysis_lefse_0/tables/
+cp $NEWPATH/Analysis_core_pipeline_taxonomic_0/tables/qiime_mapping_file.tsv $NEWPATH/Analysis_lefse_0/tables/
+
+# REPLACE HERE replace 1_0 with 2_0
+# need to SOURCE activate now
+sed -i 's/Kbpi314_AMP_AIM_Validation_10_0/Kbpi314_AMP_AIM_Validation_11_0/g' $NEWPATH/Analysis_lefse_0/jobfile_0.lsf
+
+
+# (3) prep PICRUST
+OLDPATH=/sc/arion/projects/MMEDS/mmeds_server_data/studies/Kbpi314_AMP_AIM_Validation_11_0/
+NEWPATH=/sc/arion/projects/MMEDS/mmeds_server_data/studies/TBD
+
+mkdir $NEWPATH/Analysis_picrust2_0
+mkdir $NEWPATH/Analysis_picrust2_0/tables
+cp $OLDPATH/Analysis_lefse_0/Snakefile $NEWPATH/Analysis_picrust2_0/
+cp $OLDPATH/Analysis_lefse_0/config_file.yaml $NEWPATH/Analysis_picrust2_0/
+cp $OLDPATH/Analysis_lefse_0/jobfile_0.lsf $NEWPATH/Analysis_picrust2_0/
+
+# copy over rep seqs, asv, and qmf
+cp $NEWPATH/Analysis_core_pipeline_taxonomic_0/tables/rep_seqs_table.qza $NEWPATH/Analysis_picrust2_0/tables/
+cp $NEWPATH/Analysis_core_pipeline_taxonomic_0/tables/asv_table.asv $NEWPATH/Analysis_picrust2_0/tables/
+cp $NEWPATH/Analysis_core_pipeline_taxonomic_0/tables/qiime_mapping_file.tsv $NEWPATH/Analysis_picrust2_0/tables/
+
+# fix jobfile
+sed -i 's/Kbpi314_AMP_AIM_Validation_11_0/TBD/g' $NEWPATH/Analysis_picrust2_0/jobfile_0.lsf
+
+
+# (4) prep lefse picrust
+# this creates a properly formatted unstrat file
+cp $NEWPATH/Analysis_picrust2_0/picrust2_out/KO_metagenome_out/pred_metagenome_unstrat.tsv $NEWPATH/Analysis_picrust2_0/picrust2_out/KO_metagenome_out/pred_metagenome_unstrat_KB.tsv
+sed -i 's/function/metadata_KEGG_Pathways/g' $NEWPATH/Analysis_picrust2_0/picrust2_out/KO_metagenome_out/pred_metagenome_unstrat_KB.tsv
+
+# this maps the file to brite ko
+python /sc/arion/projects/MMEDS/pathway_analysis/define_pathways_by_BRITE_hierarchies.py \
+	-i $NEWPATH/Analysis_picrust2_0/picrust2_out/KO_metagenome_out/pred_metagenome_unstrat_KB.tsv \
+	-r /sc/arion/projects/clemej05a/kevin/ampaim/inputs/ko_map_kegg_20240328_KB.txt \
+	-o $NEWPATH/Analysis_picrust2_0/picrust2_out/KO_metagenome_out/pred_metagenome_unstrat_KB_briteko.tsv
+
+# set up lefse
+# will work with tsv! and qza if tsv doesn't exist
+
+
+
+
+
+# to download to local
+NEWPATH=/sc/arion/projects/MMEDS/mmeds_server_data/studies/Kbpi314_AMP_AIM_Validation_11_0
+DLPATH=/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs52/
+
+# download CPT
+mkdir $DLPATH/Analysis_core_pipeline_taxonomic_0
+mkdir $DLPATH/Analysis_core_pipeline_taxonomic_0/section_AMPAIM_validation1/
+scp -r buk02@chimera.hpc.mssm.edu:"$NEWPATH/Analysis_core_pipeline_taxonomic_0/section_AMPAIM_validation1/*.qzv" $DLPATH/Analysis_core_pipeline_taxonomic_0/section_AMPAIM_validation1
+scp -r buk02@chimera.hpc.mssm.edu:"$NEWPATH/Analysis_core_pipeline_taxonomic_0/diversity" $DLPATH/Analysis_core_pipeline_taxonomic_0/
+mkdir $DLPATH/Analysis_core_pipeline_taxonomic_0/section_AMPAIM_validation1/tables
+scp -r buk02@chimera.hpc.mssm.edu:"$NEWPATH/Analysis_core_pipeline_taxonomic_0/tables/*taxa*" $DLPATH/Analysis_core_pipeline_taxonomic_0/tables/
+
+# download LEFSE
+mkdir $DLPATH/Analysis_lefse_0
+mkdir $DLPATH/Analysis_lefse_0/tables
+scp -r buk02@chimera.hpc.mssm.edu:"$NEWPATH/Analysis_lefse_0/results" $DLPATH/Analysis_lefse_0/
+scp -r buk02@chimera.hpc.mssm.edu:"$NEWPATH/Analysis_lefse_0/tables" $DLPATH/Analysis_lefse_0/
+
+# download picrust2
+mkdir $DLPATH/Analysis_picrust2_0
+mkdir $DLPATH/Analysis_picrust2_0/picrust2_out
+scp -r buk02@chimera.hpc.mssm.edu:"$NEWPATH/Analysis_picrust2_0/picrust2_out" $DLPATH/Analysis_picrust2_0/
+
+
+
+# eventually download lefse on pc2
+
+
+
+
+###
+# AMP AIM batch corrected hack
+###
+
+# validation11
+
+# copy fake placeholder files
+cp /sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_AMP_AIM_MSQ_138_0/Qiime2_0/section_Segal_MSQ_138/*qz* /sc/arion/projects/MMEDS/mmeds_server_data/studies/Kbpi314_AMP_AIM_Validation_11_0/Analysis_core_pipeline_taxonomic_0/tables/
+
+# table_dada2.qza is the equivalent of /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Q2_MSQ138_141_noctrl_noeiser_nocd_correct/otu_table_del1_batch_correct.qza
+cp /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Q2_MSQ138_141_noctrl_noeiser_nocd_correct/otu_table_del1_batch_correct.qza /sc/arion/projects/MMEDS/mmeds_server_data/studies/Kbpi314_AMP_AIM_Validation_11_0/Analysis_core_pipeline_taxonomic_0/section_AMPAIM_validation1/table_dada2.qza
+
+# cp the rep seqs table
+cp /sc/arion/projects/clemej05a/kevin/ampaim/inputs/Q2_MSQ138_141_noctrl_noeiser_nocd_correct/rep_seqs_table.qza /sc/arion/projects/MMEDS/mmeds_server_data/studies/Kbpi314_AMP_AIM_Validation_11_0/Analysis_core_pipeline_taxonomic_0/tables/rep_seqs_table.qza
+
+
+
+###
+# Snakemake
+###
+
+# to install
+# make sure on Enhancement-KB branch
+source activate mmeds_test
+cd /hpc/users/mmedsadmin/www/mmeds-meta
+python setup.py install
+
+
+# test inside here
+/sc/arion/projects/MMEDS/mmeds_server_data/studies/Kbpi314_AMP_AIM_Validation_11_0/
+	Analysis_core_pipeline_taxonomic_0/
+	Analysis_lefse_0/
+	Analysis_picrust2_0/
+		tables/ 					# via mkdir
+			rep_seqs_table.qza		# copy from cpt
+			asv_table.qza			# copy from cpt
+			qiime_mapping_file.qza 	# copy from cpt
+		config_file.yaml			# copy from core pipeline taxonomic
+		jobfile_0.lsf 				# copy from cpt
+
+
+
+
+
+# can't run a job till after 6/12 because of PM maintenance 
+
+
+Activating conda environment: ../../../../.modules/picrust2
+Warning - 12 input sequences aligned poorly to reference sequences (--min_align option specified a minimum proportion of 0.8 aligning to reference sequences). These input sequences will not be placed and will be excluded from downstream steps.
+
+This is the set of poorly aligned input sequences to be excluded: ffbef410ee526355f96e39241ca7cc91, 7731e4d83d1e1128a021dab2e5bfd559, ef3894c19d3df5a11d54985e2c25731c, 7efa894ef786650da5fa8a4e47f4f8fb, 76addc8524e10c6faff0161e36a1987a, 9019ce4c61fe057ba001cfa7d47f0fde, ace4f29b8888eed593e76eefe71849e8, 1b9dfd6ceb91bb9dd057f3a69b45de8c, 658ccd5131e8e516bc57dcfd058903a7, 83e6c9c658604f9de2ef1f6ae5f64e60, 714fd976e03fe5f47750010658f22ac0, e64db7e5fa511e4cb0e73bad151f6c7e
+
+# map KO to orthologs
+
+python /sc/arion/projects/MMEDS/pathway_analysis/define_pathways_by_BRITE_hierarchies.py \
+	-i /sc/arion/projects/MMEDS/mmeds_server_data/studies/Kbpi314_AMP_AIM_Validation_11_0/Analysis_picrust2_0/picrust2_out/KO_metagenome_out/pred_metagenome_unstrat_KB.tsv \
+	-r /sc/arion/projects/MMEDS/mmeds_server_data/studies/Kbpi314_AMP_AIM_Validation_11_0/Analysis_picrust2_0/picrust2_out/KO_metagenome_out/ko_map_kegg_20240328_KB.txt \
+	-o /sc/arion/projects/MMEDS/mmeds_server_data/studies/Kbpi314_AMP_AIM_Validation_11_0/Analysis_picrust2_0/picrust2_out/KO_metagenome_out/pred_metagenome_unstrat_KB_briteko.tsv
+
+
+
+
+/sc/arion/projects/clemej05a/kevin/ampaim/inputs/ko_map_kegg_20240328_KB.txt
+
+

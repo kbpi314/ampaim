@@ -1,0 +1,79 @@
+############################
+# NYU EISER PSA Comparison #
+############################
+
+
+###
+# Q2 running
+###
+
+PYTHONPATH=/hpc/packages/minerva-centos7/anaconda3/2020.8/pkgs;
+export LC_ALL=en_US.UTF-8;
+ml anaconda3;
+source activate qiime2-2020.8.0;
+
+
+###
+# Adam MMEDs path
+###
+
+# next run with all samples incl EISER
+/sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_Cross_Disease_Pilot_0
+
+# newer run TBD
+
+
+###
+# inputs
+###
+
+# jobfile_kb1.lsf
+
+# subset mapping file on just EISER and TWIN PSA not PsO samples that are untreated 
+
+
+
+
+
+###
+# LEfSe
+###
+
+# done at login node bc fast hopefully
+qiime feature-table filter-samples \
+--i-table /sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_Cross_Disease_Pilot_0/Qiime2_0/taxa_collapsed_table_L6.qza    \
+--m-metadata-file /sc/arion/projects/clemej05a/kevin/ampaim/inputs/qiime_mapping_file_noctrl_CDvH.tsv \
+--p-where '[Diagnosis] IN ("cd", "healthy")' \
+--o-filtered-table /sc/arion/projects/clemej05a/kevin/ampaim/inputs/L6_CDvH.qza
+
+# for L7 analysis, looking for P copri
+qiime feature-table filter-samples \
+--i-table /sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_Cross_Disease_Pilot_0/Qiime2_0/taxa_collapsed_table_L7.qza    \
+--m-metadata-file /sc/arion/projects/clemej05a/kevin/ampaim/inputs/qiime_mapping_file_noctrl_RAvH.tsv \
+--p-where '[Diagnosis] IN ("RA", "healthy")' \
+--o-filtered-table /sc/arion/projects/clemej05a/kevin/ampaim/inputs/L7_RAvH.qza
+
+
+
+###
+# LEfSe plot tweaking
+###
+
+# Ran by ADAM
+/sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_Cross_Disease_Pilot_0/Lefse_0
+
+# left-space, right-space, width
+# keep subclades and max_feature_len the same per og job file
+# same import qiime modules per above except with source activate lefse
+# the above are defaults, width 7->15, max_feature_len 60->160, dpi 72->200
+
+PYTHONPATH=/hpc/packages/minerva-centos7/anaconda3/2020.8/pkgs;
+export LC_ALL=en_US.UTF-8;
+ml anaconda3;
+source activate /sc/arion/projects/MMEDS/.modules/lefse
+
+lefse_plot_res.py /sc/arion/projects/MMEDS/mmeds_server_data/studies/adamcantor22_Cross_Disease_Pilot_0/Lefse_6/lefse_results.res /sc/arion/projects/clemej05a/kevin/ampaim/graphs/results_plot_SSvH.png --format png --max_feature_len 160 --subclades -1 --dpi 200 --left_space 0.2 --right_space 0.1 --width 12;
+
+
+
+

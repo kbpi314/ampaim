@@ -83,10 +83,7 @@ outputs/
 	jobs36							# SJC TJC ab with alpha, beta pathways, taxa
 	jobs37							# taxa
 	jobs38							# pathways
-	jobs39                          # TEST SRA download PRJNA317370
-	jobs40							# PRJNA634145
-	jobs41							# PRJNA626512
-	jobs42							# PRJNA791216
+
 	
 
 	CDP_MSQ141_batch_correct_GG1
@@ -1147,66 +1144,5 @@ corr_compare: False
 [graph]
 graph_bound: 100
 fix_axis: False
-
-
-###
-# Meta analyses
-###
-
-# jobs39 
-# issue with lines somewhere
-
-
-
-
-# jobs41 smol issue with lines
-# off by 1
-SRR11570827
-
-
-# pipeline
-# (1) download into SRA_data using adam's script
-# (2) source activate fastq-pair and delete *fastq and *single*
-for file in *_1.fastq; 
-do   
-prefix="${file%%_*}";   
-echo "$prefix"; 
-fastq_pair ${prefix}_1.fastq ${prefix}_2.fastq;
-done
-
-# (3) rename
-rename _1.fastq.paired.fq _S1_L001_R1_001.fastq *;
-rename _2.fastq.paired.fq _S1_L001_R2_001.fastq *;
-
-# (4) zip them all
-
-# (5) in MMEDS create new folder
-/sc/arion/projects/MMEDS/mmeds_server_data/studies/Kbpi314_AMP_AIM_Validation_2_0/
-	#subfolders
-	Analysis_core_pipeline_taxonomic_0/
-	Snakefile # copy as is?
-	config_file.yaml # copy as is?
-	jobfile_0.lsf # change these paths
-		section_AMPAIM_validation2/
-			stripped_output/
-				SRR11570850_S1_L001_R1_001.fastq.gz 
-				...
-		tables/
-			# symbolic link to classifier with object edited so 'scikit learn package' is consistent LOL greengenes2.2020-10.nb-classifier.old_qiime2.qza 
-			 # #SampleID and HostSubjectId (for LEfSe) and any metadat cols to do lefse on are the only required things! make sure #q2:types and categorical are also present
-			 qiime_mapping_file.tsv
-	Analysis_lefse_0
-		tables/
-			qiime_mapping_file.tsv  
-			Diagnosis/ # also automatic I think
-			taxa_table_L7.qza   # produced automatically i think
-			taxa_table_L7.tsv   # also automatic
-		jobfile_0.lsf
-		Snakefile
-		config_file.yaml
-
-
-
-
 
 
