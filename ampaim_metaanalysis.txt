@@ -127,29 +127,35 @@ sed -i 's/Kbpi314_AMP_AIM_Validation_10_0/Kbpi314_AMP_AIM_Validation_11_0/g' $NE
 
 # (3) prep PICRUST
 OLDPATH=/sc/arion/projects/MMEDS/mmeds_server_data/studies/Kbpi314_AMP_AIM_Validation_11_0/
-NEWPATH=/sc/arion/projects/MMEDS/mmeds_server_data/studies/TBD
+NEWPATH=/sc/arion/projects/MMEDS/mmeds_server_data/studies/Kbpi314_AMP_AIM_Validation_2_0/
 
 mkdir $NEWPATH/Analysis_picrust2_0
 mkdir $NEWPATH/Analysis_picrust2_0/tables
-cp $OLDPATH/Analysis_lefse_0/Snakefile $NEWPATH/Analysis_picrust2_0/
-cp $OLDPATH/Analysis_lefse_0/config_file.yaml $NEWPATH/Analysis_picrust2_0/
-cp $OLDPATH/Analysis_lefse_0/jobfile_0.lsf $NEWPATH/Analysis_picrust2_0/
+cp $OLDPATH/Analysis_picrust2_0/Snakefile $NEWPATH/Analysis_picrust2_0/
+cp $OLDPATH/Analysis_picrust2_0/config_file.yaml $NEWPATH/Analysis_picrust2_0/
+cp $OLDPATH/Analysis_picrust2_0/jobfile_0.lsf $NEWPATH/Analysis_picrust2_0/
 
 # copy over rep seqs, asv, and qmf
 cp $NEWPATH/Analysis_core_pipeline_taxonomic_0/tables/rep_seqs_table.qza $NEWPATH/Analysis_picrust2_0/tables/
-cp $NEWPATH/Analysis_core_pipeline_taxonomic_0/tables/asv_table.asv $NEWPATH/Analysis_picrust2_0/tables/
+cp $NEWPATH/Analysis_core_pipeline_taxonomic_0/tables/asv_table.qza $NEWPATH/Analysis_picrust2_0/tables/
 cp $NEWPATH/Analysis_core_pipeline_taxonomic_0/tables/qiime_mapping_file.tsv $NEWPATH/Analysis_picrust2_0/tables/
 
 # fix jobfile
-sed -i 's/Kbpi314_AMP_AIM_Validation_11_0/TBD/g' $NEWPATH/Analysis_picrust2_0/jobfile_0.lsf
+sed -i 's/Kbpi314_AMP_AIM_Validation_11_0/Kbpi314_AMP_AIM_Validation_2_0/g' $NEWPATH/Analysis_picrust2_0/jobfile_0.lsf
 
 
 # (4) prep lefse picrust
+OLDPATH=/sc/arion/projects/MMEDS/mmeds_server_data/studies/Kbpi314_AMP_AIM_Validation_11_0/
+NEWPATH=/sc/arion/projects/MMEDS/mmeds_server_data/studies/Kbpi314_AMP_AIM_Validation_2_0/
+
 # this creates a properly formatted unstrat file
+# map KO to orthologs
+gunzip $NEWPATH/Analysis_picrust2_0/picrust2_out/KO_metagenome_out/pred_metagenome_unstrat.tsv
 cp $NEWPATH/Analysis_picrust2_0/picrust2_out/KO_metagenome_out/pred_metagenome_unstrat.tsv $NEWPATH/Analysis_picrust2_0/picrust2_out/KO_metagenome_out/pred_metagenome_unstrat_KB.tsv
 sed -i 's/function/metadata_KEGG_Pathways/g' $NEWPATH/Analysis_picrust2_0/picrust2_out/KO_metagenome_out/pred_metagenome_unstrat_KB.tsv
 
 # this maps the file to brite ko
+ml anaconda3
 python /sc/arion/projects/MMEDS/pathway_analysis/define_pathways_by_BRITE_hierarchies.py \
 	-i $NEWPATH/Analysis_picrust2_0/picrust2_out/KO_metagenome_out/pred_metagenome_unstrat_KB.tsv \
 	-r /sc/arion/projects/clemej05a/kevin/ampaim/inputs/ko_map_kegg_20240328_KB.txt \
@@ -158,13 +164,34 @@ python /sc/arion/projects/MMEDS/pathway_analysis/define_pathways_by_BRITE_hierar
 # set up lefse
 # will work with tsv! and qza if tsv doesn't exist
 
+mkdir $NEWPATH/Analysis_lefse_picrust2_0
+mkdir $NEWPATH/Analysis_lefse_picrust2_0/tables
+cp $OLDPATH/Analysis_lefse_picrust2_0/Snakefile $NEWPATH/Analysis_lefse_picrust2_0/
+cp $OLDPATH/Analysis_lefse_picrust2_0/config_file.yaml $NEWPATH/Analysis_lefse_picrust2_0/
+cp $OLDPATH/Analysis_lefse_picrust2_0/jobfile_0.lsf $NEWPATH/Analysis_lefse_picrust2_0/
+
+# before running lefse, copy over the L7 table and qiime mapping file
+# make new mapping file and move it to $NEWPATH/Analyses_core_pipeline_taxonomic_0/tables
+# make sure metadata column matches in config
+cp $NEWPATH/Analysis_picrust2_0/picrust2_out/KO_metagenome_out/pred_metagenome_unstrat_KB_briteko.tsv $NEWPATH/Analysis_lefse_picrust2_0/tables/picrust2_briteko.tsv
+cp $NEWPATH/Analysis_core_pipeline_taxonomic_0/tables/qiime_mapping_file.tsv $NEWPATH/Analysis_lefse_picrust2_0/tables/
+
+# import from tsv to biom to qza
+biom convert --to-hdf5 -i $NEWPATH/Analysis_lefse_picrust2_0/tables/picrust2_briteko.tsv -o $NEWPATH/Analysis_lefse_picrust2_0/tables/picrust2_briteko.biom
+qiime tools import --type 'FeatureTable[Frequency]' --input-path $NEWPATH/Analysis_lefse_picrust2_0/tables/picrust2_briteko.biom --output-path $NEWPATH/Analysis_lefse_picrust2_0/tables/picrust2_briteko.qza
+
+# need to SOURCE activate now
+sed -i 's/Kbpi314_AMP_AIM_Validation_11_0/Kbpi314_AMP_AIM_Validation_2_0/g' $NEWPATH/Analysis_lefse_picrust2_0/jobfile_0.lsf
 
 
 
+###
+# Downloading to local
+###
 
 # to download to local
-NEWPATH=/sc/arion/projects/MMEDS/mmeds_server_data/studies/Kbpi314_AMP_AIM_Validation_11_0
-DLPATH=/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs52/
+NEWPATH=/sc/arion/projects/MMEDS/mmeds_server_data/studies/Kbpi314_AMP_AIM_Validation_4_0
+DLPATH=/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/outputs/jobs46/
 
 # download CPT
 mkdir $DLPATH/Analysis_core_pipeline_taxonomic_0
@@ -184,6 +211,14 @@ scp -r buk02@chimera.hpc.mssm.edu:"$NEWPATH/Analysis_lefse_0/tables" $DLPATH/Ana
 mkdir $DLPATH/Analysis_picrust2_0
 mkdir $DLPATH/Analysis_picrust2_0/picrust2_out
 scp -r buk02@chimera.hpc.mssm.edu:"$NEWPATH/Analysis_picrust2_0/picrust2_out" $DLPATH/Analysis_picrust2_0/
+
+# download LEFSE of pc2
+mkdir $DLPATH/Analysis_lefse_picrust2_0
+mkdir $DLPATH/Analysis_lefse_picrust2_0/tables
+scp -r buk02@chimera.hpc.mssm.edu:"$NEWPATH/Analysis_lefse_picrust2_0/results" $DLPATH/Analysis_lefse_picrust2_0/
+scp -r buk02@chimera.hpc.mssm.edu:"$NEWPATH/Analysis_lefse_picrust2_0/tables" $DLPATH/Analysis_lefse_picrust2_0/
+
+
 
 
 
@@ -236,20 +271,7 @@ python setup.py install
 
 
 
-# can't run a job till after 6/12 because of PM maintenance 
 
-
-Activating conda environment: ../../../../.modules/picrust2
-Warning - 12 input sequences aligned poorly to reference sequences (--min_align option specified a minimum proportion of 0.8 aligning to reference sequences). These input sequences will not be placed and will be excluded from downstream steps.
-
-This is the set of poorly aligned input sequences to be excluded: ffbef410ee526355f96e39241ca7cc91, 7731e4d83d1e1128a021dab2e5bfd559, ef3894c19d3df5a11d54985e2c25731c, 7efa894ef786650da5fa8a4e47f4f8fb, 76addc8524e10c6faff0161e36a1987a, 9019ce4c61fe057ba001cfa7d47f0fde, ace4f29b8888eed593e76eefe71849e8, 1b9dfd6ceb91bb9dd057f3a69b45de8c, 658ccd5131e8e516bc57dcfd058903a7, 83e6c9c658604f9de2ef1f6ae5f64e60, 714fd976e03fe5f47750010658f22ac0, e64db7e5fa511e4cb0e73bad151f6c7e
-
-# map KO to orthologs
-
-python /sc/arion/projects/MMEDS/pathway_analysis/define_pathways_by_BRITE_hierarchies.py \
-	-i /sc/arion/projects/MMEDS/mmeds_server_data/studies/Kbpi314_AMP_AIM_Validation_11_0/Analysis_picrust2_0/picrust2_out/KO_metagenome_out/pred_metagenome_unstrat_KB.tsv \
-	-r /sc/arion/projects/MMEDS/mmeds_server_data/studies/Kbpi314_AMP_AIM_Validation_11_0/Analysis_picrust2_0/picrust2_out/KO_metagenome_out/ko_map_kegg_20240328_KB.txt \
-	-o /sc/arion/projects/MMEDS/mmeds_server_data/studies/Kbpi314_AMP_AIM_Validation_11_0/Analysis_picrust2_0/picrust2_out/KO_metagenome_out/pred_metagenome_unstrat_KB_briteko.tsv
 
 
 
