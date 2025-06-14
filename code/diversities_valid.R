@@ -33,11 +33,11 @@ col1 <- colorRampPalette(brewer.pal(9, "Paired"))(7) # we FORCE the colors per A
 col1 <- c('white', # HC
           "#4F9AA6", # RA
           "#FB9A99", # PsO
-          # "#EB5037", # SLE
+          "#EB5037", # SLE; comment this out if issue
           "#FE9425",# SjD
           "#CAB2D6", #PsA
           'purple' # AxSpA 
-          ) #  # remove PsA color since not yet in dataset
+          ) 
 
 # variable of interest
 a <- 'shannon_entropy'
@@ -52,7 +52,7 @@ d.final <- df_alpha[, c("cohort","Diagnosis","shannon_entropy")]
 d.final[d.final=='HC'] <- 'Healthy'
 
 # change dx order
-dx.order = c("Healthy", "RA", "PsO", # "SLE", 
+dx.order = c("Healthy", "RA", "PsO", "SLE", 
              "SjD",'PsA','AxSpA')
 d.final$Diagnosis <- factor(d.final$Diagnosis, levels = dx.order)
 
@@ -64,11 +64,12 @@ c.order = c("AMPAIM",
             
             "Valid5PsO",   
             'Valid8PsO',
-            # "Valid6PsO",  
+            "Valid6PsO",  
             
             'Valid10PsO',
             'Valid9PsD',
-            # "Valid1SLE",
+            "Valid1SLE",
+            "Valid6SLE",
             
             "Valid3SjD",
             'Valid2AxSpA'
@@ -105,7 +106,7 @@ df_beta = read.table('/Users/KevinBu/Desktop/clemente_lab/Projects/ampaim/output
                      sep = '\t', header = TRUE, row.names = 1, check.names = FALSE,
                      na.strings = "NA")
 
-# remove healthy color
+#  # remove PsA color since not yet in dataset
 col1 <- col1[-1]
 
 # variable of interest
@@ -134,7 +135,7 @@ d.final$cohort <- factor(d.final$cohort, levels = c.order)
 
 # Count number of groups per category
 group_counts <- d.final %>%
-  group_by(Diagnosis) %>%
+  group_by(cohort) %>%
   mutate(n_group = n())
 
 # Set manual dodge width based on group count
@@ -145,7 +146,9 @@ p <- ggplot(d.final, aes(x = cohort, y = psig, fill = Diagnosis)) +
   # geom_bar(stat='identity',position = position_dodge()) +
   geom_col(
     position = position_dodge2(width = dodge_width, preserve = "single"),
-    width = ifelse(group_counts$n_group == 1, 0.4, 0.9)  # Smaller width for single bars
+    width = 0.8
+    # width = ifelse(group_counts$n_group == 1, 0.9, 0.4) 
+    # width = ifelse(group_counts$n_group == 1, 1, ifelse(group_counts$n_group == 2, 0.7, 0.4))  # Smaller width for single bars
   ) + 
   
   bkg + 
@@ -178,6 +181,9 @@ df = subset(df_alpha, df_alpha$cohort == 'Valid10PsO')
 df = subset(df_alpha, df_alpha$cohort == 'Valid9PsD') # KW
 df = subset(df_alpha, df_alpha$cohort == 'Valid3SjD')
 df = subset(df_alpha, df_alpha$cohort == 'Valid2AxSpA')
+df = subset(df_alpha, df_alpha$cohort == 'Valid6SLE')
+df = subset(df_alpha, df_alpha$cohort == 'Valid1SLE')
+
 # kruskal.test(shannon_entropy ~ Diagnosis, data=df)
 wilcox.test(shannon_entropy ~ Diagnosis, data=df)
 
